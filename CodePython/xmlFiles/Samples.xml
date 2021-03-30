@@ -1,0 +1,93 @@
+<listSamples>
+    <sample>
+        <name>filNylon</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>CreateSampleCylindre</myGeometryFunction>
+        <myRadius unit="um">100</myRadius>
+        <myOrientation unit="degree">81.56</myOrientation> 
+        <myMaterials>Nylon</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>Mask_CuSn_From_edf</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn_dim200x200_oversamp4_margin10</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>CuSn,PMMA</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>Mask_CuSn_From_txt</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>CuSn,PMMA</myMaterials>
+        <myMeanSphereRadius>6</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>ContrastPhantomC</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
+        <myGeometryFolder>ContrastPhantom/CP_Simap_100p0overSampx4_angle90/</myGeometryFolder>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Vacuum,Vacuum,Solid Water</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheresSegmentedFromFileFe90ID17_x10</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/membraneFe90_21p948um_overSampx10.edf</myMembraneFile>
+        <myMaterials>Fe,PMMA</myMaterials>
+        <myPMMAThickness unit="um">2000</myPMMAThickness>
+        <myNbOfLayers>1</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheresSegmentedFromFileFe90Simap</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/membraneFe90_Simap_21p4um_overSampx4.edf</myMembraneFile>
+        <myMaterials>Fe,PMMA</myMaterials>
+        <myPMMAThickness unit="um">2000</myPMMAThickness>
+        <myNbOfLayers>3</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheresSegmentedFromFileFe90</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/membraneFe90_50p0um_overSampx4.edf</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>Fe,PMMA</myMaterials>
+        <myNbOfLayers>3</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Be_window</name>
+        <myType>thin_film</myType>
+        <myGeometryFunction>get_my_thickness</myGeometryFunction>
+        <myMaterials>Be</myMaterials>
+        <myThickness unit="um">200</myThickness>
+    </sample>
+    
+    <sample>
+        <name>C_plaque</name>
+        <myType>thin_film</myType>
+        <myGeometryFunction>get_my_thickness</myGeometryFunction>
+        <myMaterials>Carbon</myMaterials>
+        <myThickness unit="um">2500</myThickness>
+    </sample>
+    
+    <sample>
+        <name>air_volume</name>
+        <myType>volume</myType>
+        <myGeometryFunction>get_my_thickness</myGeometryFunction>
+        <myMaterials>Air</myMaterials>
+        <myThickness unit="um">694000</myThickness>
+    </sample>
+    
+</listSamples>

@@ -1,0 +1,18 @@
+<listSources>
+    <source>
+        <name>id17</name>
+        <myType>Monochromatic</myType>
+        <mySize unit="um">1</mySize>
+        <myEnergy unit="kev">33</myEnergy>
+    </source>
+    
+    <source>
+        <name>simap</name>
+        <myType>Polychromatic</myType>
+        <mySize unit="um">1</mySize>
+        <sourceVoltage unit="kVp">40</sourceVoltage>
+        <myEnergySampling unit="keV">0.5</myEnergySampling>
+    </source>
+    
+</listSources>
+    

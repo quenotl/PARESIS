@@ -1,0 +1,40 @@
+EXPERIMENT PARAMETERS - Fresnel - 20210330-135325
+
+Distances:
+Distance source to membrane: 0.0415m
+Distance membrane to sample: 0.0215m
+Distance sample to detector: 0.607m
+
+Source parameters:
+Source name: simap
+Source type: Polychromatic
+Source size: 1um
+Source voltage: 40kVp
+Source spectrum path: 
+Source spectrum energy sampling: 0.5keV
+
+Detector parameters:
+Detector name: flatPanelSimap
+Detector dimensions:110x110pix
+Detector pixels size: 127um
+Detector PSF: 0pix
+Detector efficiency limit: 100keV
+
+Sample informations
+Sample name: filNylon
+Sample type: AnalyticalSample
+
+Membrane informations:
+Membrane name: Mask_CuSn_From_txt
+Membrane type: membrane
+Membrane geometry function: getMembraneSegmentedFromFile
+Membrane number of layers: 2
+
+Other study parameters:
+Precision of the calculation: 52.3064urad
+Oversampling Factor: 4
+Study dimensions: 480x480pix
+Study pixel size: 2.98545um
+Mean shot count: 124000
+Number of points: 1
+Entire computing time: 528.059s

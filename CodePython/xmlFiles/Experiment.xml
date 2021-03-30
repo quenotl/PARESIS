@@ -1,0 +1,69 @@
+
+<listExperiment>
+    <experiment>
+        <name>id17_FilNylon_md1217</name>
+        <distSourceToMembrane unit="m">144</distSourceToMembrane>
+        <distMembraneToObject unit="m">1.6</distMembraneToObject>
+        <distObjectToDetector unit="m">3.6</distObjectToDetector>
+        <membraneName>Mask_CuSn_From_txt</membraneName>
+        <sampleName>filNylon</sampleName>
+        <sampleType>AnalyticalSample</sampleType>
+        <detectorName>sCMOS_ESRF2</detectorName>
+        <sourceName>id17</sourceName>
+        <meanShotCount>3000</meanShotCount>
+    </experiment>
+    
+    <experiment>
+        <name>SIMAP_FilNylon_mars2021</name>
+        <distSourceToMembrane unit="m">0.0415</distSourceToMembrane>
+        <distMembraneToObject unit="m">0.0215</distMembraneToObject>
+        <distObjectToDetector unit="m">0.607</distObjectToDetector>
+        <membraneName>Mask_CuSn_From_txt</membraneName>
+        <sampleName>filNylon</sampleName>
+        <plaqueName>C_plaque</plaqueName>
+        <sampleType>AnalyticalSample</sampleType>
+        <detectorName>flatPanelSimap</detectorName>
+        <sourceName>simap</sourceName>
+        <meanShotCount>124000</meanShotCount>
+    </experiment>
+   
+    <experiment>
+        <name>id17_ContrastPhantom</name>
+        <distSourceToMembrane unit="m">144</distSourceToMembrane>
+        <distMembraneToObject unit="m">1.6</distMembraneToObject>
+        <distObjectToDetector unit="m">3.6</distObjectToDetector>
+        <membraneName>RandomSpheresSegmentedFromFileFe90ID17</membraneName>
+        <sampleName>ContrastPhantomC</sampleName>
+        <sampleType>AnalyticalSample</sampleType>
+        <detectorName>sCMOS_ESRF1</detectorName>
+        <sourceName>id17</sourceName>
+        <meanShotCount>3000</meanShotCount>
+    </experiment>
+    
+    <experiment>
+        <name>SIMAP_ContrastPhantom</name>
+        <distSourceToMembrane unit="m">0.25</distSourceToMembrane>
+        <distMembraneToObject unit="m">0</distMembraneToObject>
+        <distObjectToDetector unit="m">1</distObjectToDetector>
+        <membraneName>RandomSpheresSegmentedFromFileFe90Simap</membraneName>
+        <sampleName>ContrastPhantomC</sampleName>
+        <sampleType>AnalyticalSample</sampleType>
+        <detectorName>flatPanelSimap</detectorName>
+        <sourceName>simap</sourceName>
+        <meanShotCount>27600</meanShotCount>
+    </experiment>
+    
+    <experiment>
+        <name>Clinic_ContrastPhantom</name>
+        <distSourceToMembrane unit="m">1</distSourceToMembrane>
+        <distMembraneToObject unit="m">0</distMembraneToObject>
+        <distObjectToDetector unit="m">1</distObjectToDetector>
+        <membraneName>RandomSpheresSegmentedFromFileFe90</membraneName>
+        <sampleName>ContrastPhantomB</sampleName>
+        <sampleType>AnalyticalSample</sampleType>
+        <detectorName>flatPanelClinic</detectorName>
+        <sourceName>clinic</sourceName>
+        <meanShotCount>27600</meanShotCount>
+    </experiment>
+</listExperiment>
+
