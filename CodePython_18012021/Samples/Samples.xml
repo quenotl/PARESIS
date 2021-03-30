@@ -1,0 +1,112 @@
+<listSamples>
+    <sample>
+        <name>filNylon</name>
+        <myType>SimulatedCylindre</myType>
+        <myGeometryFunction>CreateSampleCylindre</myGeometryFunction>
+        <myRadius unit="um">70</myRadius>
+        <myMaterials>Nylon</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>cylindreMuscle</name>
+        <myType>SimulatedCylindre</myType>
+        <myGeometryFunction>CreateSampleCylindre</myGeometryFunction>
+        <myRadius unit="um">2500</myRadius>
+        <myMaterials>Muscle</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>PMMA_Sphere</name>
+        <myType>SimulatedSphere</myType>
+        <myGeometryFunction>CreateSampleSphere</myGeometryFunction>
+        <myRadius unit="um">200</myRadius>
+        <myMaterials>PMMA</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>ContrastPhantom</name>
+        <myType>SimulatedPhantom</myType>
+        <myGeometryFunction>generateContrastPhantom</myGeometryFunction>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheres</name>
+        <myType>SimulatedMembrane</myType>
+        <myNbOfSpheres>500</myNbOfSpheres>
+        <myPorosity>0.95
+        </myPorosity>
+        <mySpheresRadius unit="um">5</mySpheresRadius>
+        <mySpheresRadiusSigma unit="um">5</mySpheresRadiusSigma>
+        <myMaterials>Cu</myMaterials>
+    </sample>
+    
+    
+    <sample>
+        <name>MembraneTest</name>
+        <myType>SimulatedMembrane</myType>
+        <myGeometryFunction>geometryTest</myGeometryFunction>
+        <myMaterials>Cu</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheresFromFile</name>
+        <myType>SimulatedMembrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/membranex12_um_radiusmean6p1um_overSampx16_pix6um.edf</myMembraneFile>
+        <myMaterials>CorticalBone</myMaterials>
+    </sample>
+    
+    
+    <sample>
+        <name>RandomSpheresFromTxtFile</name>
+        <myType>SimulatedMembrane</myType>
+        <myGeometryFunction>getMembraneFromTxtFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn_v2.txt</myMembraneFile>
+        <myMaterials>CuSn</myMaterials>
+        <mySpheresMeanRadius unit="um">6.2</mySpheresMeanRadius>
+    </sample>
+    
+    <sample>
+        <name>RandomSpheresSegmentedFromTxtFile</name>
+        <myType>SimulatedMembrane</myType>
+        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/Fe90_3D.txt</myMembraneFile>
+        <myMaterials>Fe</myMaterials>
+        <mySpheresMeanRadius unit="um">6.2</mySpheresMeanRadius>
+    </sample>
+    
+    <sample>
+        <name>2RandomSpheresFromTxtFile</name>
+        <myType>SimulatedMembrane</myType>
+        <myGeometryFunction>getMembraneFromTxtFile2</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/rdmSphere_surf700x700um_meanRad6p1um_sigma2p28.txt</myMembraneFile>
+        <myMembraneFile2>Samples/Membranes/rdmSphere_surf700x700um_meanRad6p1um_sigma2p28_b.txt</myMembraneFile2>
+        <myMaterials>CuSn</myMaterials>
+        <mySpheresMeanRadius unit="um">20</mySpheresMeanRadius>
+    </sample>
+    
+    
+    <sample>
+        <name>Finger</name>
+        <myType>Voxelized</myType>
+        <myGeometryFunction>getVolumesFromFiles</myGeometryFunction>
+        <myMaterials>Adipose,Cartilage,CorticalBone,BreastTissue</myMaterials>
+        <myGeometriesFolder>/Users/quenot/Data/Finger3SR/Phantom_Project/</myGeometriesFolder>
+        <myVolumesFiles>Fat.nrrd,Cartilage.nrrd,Bone.nrrd,Tissue.nrrd</myVolumesFiles>
+        <myNumberOfSlice>1</myNumberOfSlice>
+        <myVoxelSize unit="um">19.557</myVoxelSize>
+    </sample>
+    
+    <sample>
+        <name>FingerAnalytic</name>
+        <myType>3DProjections</myType>
+        <myGeometryFunction>getVolumesFromFiles</myGeometryFunction>
+        <myMaterials>Adipose,Cartilage,CorticalBone,Breast</myMaterials>
+        <myGeometriesFolder>/Users/quenot/Data/Finger3SR/Phantom_Project/</myGeometriesFolder>
+        <myVolumesFiles>Fat_Prj,Cartilage_Prj,Bone_Prj,Tissue_Prj</myVolumesFiles>
+        <myNumberOfSlice>1</myNumberOfSlice>
+        <myVoxelSize unit="um">25</myVoxelSize>
+        <myProjectionNumber>350</myProjectionNumber>
+    </sample>
+</listSamples>
