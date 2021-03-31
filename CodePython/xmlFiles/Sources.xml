@@ -11,6 +11,8 @@
         <myType>Polychromatic</myType>
         <mySize unit="um">1</mySize>
         <sourceVoltage unit="kVp">40</sourceVoltage>
+        <exitingWindowMaterial>Be</exitingWindowMaterial>
+        <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>
         <myEnergySampling unit="keV">0.5</myEnergySampling>
     </source>
     

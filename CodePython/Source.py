@@ -25,6 +25,7 @@ class Source:
         self.mySpectrum=[]
         self.mySize=0.
         self.myType=None
+        self.exitingWindowMaterial=None
         
     def defineCorrectValuesSource(self):
         for currentSource in self.xmldocSources.documentElement.getElementsByTagName("source"):
@@ -36,6 +37,10 @@ class Source:
                 if self.myType=="Polychromatic":
                     self.myEnergySampling=float(self.getText(currentSource.getElementsByTagName("myEnergySampling")[0]))
                     self.myVoltage=float(self.getText(currentSource.getElementsByTagName("sourceVoltage")[0]))
+                    for node in currentSource.childNodes:
+                        if node.localName=="exitingWindowMaterial":
+                            self.exitingWindowMaterial=self.getText(currentSource.getElementsByTagName("exitingWindowMaterial")[0])
+                            self.exitingWindowThickness=float(self.getText(currentSource.getElementsByTagName("exitingWindowThickness")[0]))
                 if self.myType=="Monochromatic":
                     self.myEnergySampling=1
                 return
@@ -54,7 +59,8 @@ class Source:
         if self.myType=="Polychromatic":
             
             s = sp.Spek(kvp=self.myVoltage,th=12)
-            s.filter('Be', 0.2)
+            if self.exitingWindowMaterial is not None:
+                s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
             spectrum=s.get_spectrum()
             
             plt.figure()

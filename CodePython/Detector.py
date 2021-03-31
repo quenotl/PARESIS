@@ -37,7 +37,7 @@ class Detector:
         raise ValueError("detector not found in xml file")
             
             
-    def detection(self,incidentWave,effectiveSourceSize,meanShotCount):
+    def detection(self,incidentWave,effectiveSourceSize):
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
             incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')

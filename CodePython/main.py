@@ -18,8 +18,7 @@ from InputOutput.pagailleIO import saveEdf,openImage
 from Experiment import Experiment
 import numpy as np
 
-    
-     
+
 if __name__ == "__main__":
     time0=time.time() #timer for computation
     exp_dict={}

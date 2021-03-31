@@ -67,14 +67,6 @@
     </sample>
     
     <sample>
-        <name>Be_window</name>
-        <myType>thin_film</myType>
-        <myGeometryFunction>get_my_thickness</myGeometryFunction>
-        <myMaterials>Be</myMaterials>
-        <myThickness unit="um">200</myThickness>
-    </sample>
-    
-    <sample>
         <name>C_plaque</name>
         <myType>thin_film</myType>
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
