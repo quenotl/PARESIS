@@ -20,6 +20,11 @@ import numpy as np
 
 
 if __name__ == "__main__":
+    """main of the simulation code.
+
+    Notes:
+        Set the parameters below and parameters in .xml files then launch
+    """
     time0=time.time() #timer for computation
     exp_dict={}
     
@@ -52,9 +57,9 @@ if __name__ == "__main__":
         print("\n\n*************************")
         print("Calculations point",pointNum)
         if exp_dict['simulation_type']=="Fresnel":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages(exp_dict)
+            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages()
         elif exp_dict['simulation_type']=="RayT":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy=experiment.computeSampleAndReferenceImagesRT(exp_dict)
+            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy=experiment.computeSampleAndReferenceImagesRT()
         else:
             raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
         Nbin=len(SampleImageTmp)

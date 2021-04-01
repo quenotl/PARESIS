@@ -8,7 +8,6 @@ Created on Wed Jan 15 14:37:59 2020
 
 import numpy as np
 from xml.dom import minidom
-import sys
 import time
 from Source import Source
 from Detector import Detector
@@ -19,10 +18,14 @@ from numpy.fft import fft2
 from numpy.fft import ifft2
 from matplotlib import pyplot as plt
 from numpy import pi as pi
-import csv
 
 class Experiment:
     def __init__(self, exp_dict, pointNum):#expName, pointNum, sampling):
+        """Experiment class constructor.
+            
+        Args:
+            exp_dict (dict): dictionnary of simulation algorithm parameters
+        """
         self.xmlExperimentFileName="xmlFiles/Experiment.xml"
         self.xmldoc = minidom.parse(self.xmlExperimentFileName)
         self.name=exp_dict['experimentName']
@@ -240,7 +243,7 @@ class Experiment:
         return intensityRefracted2,alphax, alphay    
     
 #        
-    def computeSampleAndReferenceImages(self,exp_dict):
+    def computeSampleAndReferenceImages(self):
         
         #INITIALIZING PARAMETERS
         totalFlux=0 
@@ -331,7 +334,7 @@ class Experiment:
 
         return  SampleImage, ReferenceImage,PropagImage,detectedWhite
         
-    def computeSampleAndReferenceImagesRT(self,exp_dict):
+    def computeSampleAndReferenceImagesRT(self):
         
         #INITIALIZING PARAMETERS
         totalFlux=0 

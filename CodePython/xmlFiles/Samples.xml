@@ -70,7 +70,7 @@
         <name>C_plaque</name>
         <myType>thin_film</myType>
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
-        <myMaterials>Carbon</myMaterials>
+        <myMaterials>CarbonFiber</myMaterials>
         <myThickness unit="um">2500</myThickness>
     </sample>
     
