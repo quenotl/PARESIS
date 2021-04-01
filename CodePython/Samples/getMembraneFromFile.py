@@ -111,11 +111,22 @@ if __name__ == "__main__":
     pixSize=detector_pixel_size/overSamp/magnification
     storingFolder='Membranes/CuSn_dim'+str(Nx)+'x'+str(Ny)+'_oversamp'+str(overSamp)+'_margin'+str(imageMargins)+'/'
     
-    os.mkdir(storingFolder)
     membrane=Membrane()
+    
+    maxx=(9813/6*membrane.myMeanSphereRadius)
+    maxy=(8178/6*membrane.myMeanSphereRadius)
+    maxDx=maxx/pixSize
+    maxDy=maxy/pixSize
 
+    print("Maximum size of the membrane you can generate with those parameters: %d x %d um" %(maxx ,maxy) )
+    print("The one you are trying to create is %d x %d um" %(dimX*pixSize, dimY*pixSize))
+    if dimX>maxDx or dimY>maxDy:
+        raise Exception("The segmented membrane is too small for the one you are trying to generate. (You can try increasing the sphere mean radius)")
+    
+    os.mkdir(storingFolder)
     
     for pointNum in range (number_of_positions):
+        print("\nNumber of the position currently processed ", pointNum)
         membraneThickness=getMembraneSegmentedFromFile(membrane,dimX,dimY,pixSize,overSamp, pointNum)
         txtPoint = '%2.2d' % pointNum
         saveEdf(membraneThickness, storingFolder+txtPoint+'.edf')

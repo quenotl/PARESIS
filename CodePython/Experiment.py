@@ -259,7 +259,7 @@ class Experiment:
         SampleImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         ReferenceImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         PropagImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        PropagImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
+        detectedWhite=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         
         
         #Defining total flux for normalizing spectrum
@@ -317,7 +317,7 @@ class Experiment:
         self.meanEnergy=self.meanEnergy/totalFlux
         print("MeanEnergy", self.meanEnergy)
             
-        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.studyPixelSize #FWHM
+        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
         self.imageSampleBeforeDetection=self.imageSampleBeforeDetection
         self.imageReferenceBeforeDetection=self.imageReferenceBeforeDetection
         imageSampleBeforeDetection=self.imageSampleBeforeDetection
@@ -351,7 +351,8 @@ class Experiment:
         SampleImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         ReferenceImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         PropagImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        
+        detectedWhite=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
+
         #Defining total flux for normalizing spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
             totalFlux+=flux
@@ -404,7 +405,7 @@ class Experiment:
         self.meanEnergy=self.meanEnergy/totalFlux
         print("MeanEnergy", self.meanEnergy)
         
-        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.studyPixelSize #FWHM
+        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
         self.imageSampleBeforeDetection=self.imageSampleBeforeDetection
         self.imageReferenceBeforeDetection=self.imageReferenceBeforeDetection
 

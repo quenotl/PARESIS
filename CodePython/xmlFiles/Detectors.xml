@@ -26,7 +26,7 @@
             <dimY>100</dimY>
         </myDimensions>
         <myPixelSize unit="um">127</myPixelSize>
-        <myPSF unit="pixel">1.2</myPSF>
+        <myPSF unit="pixel">0</myPSF>
     </detector>
     
 </listDetectors>

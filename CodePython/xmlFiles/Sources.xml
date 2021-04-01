@@ -9,7 +9,7 @@
     <source>
         <name>simap</name>
         <myType>Polychromatic</myType>
-        <mySize unit="um">1</mySize>
+        <mySize unit="um">8</mySize>
         <sourceVoltage unit="kVp">40</sourceVoltage>
         <exitingWindowMaterial>Be</exitingWindowMaterial>
         <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>

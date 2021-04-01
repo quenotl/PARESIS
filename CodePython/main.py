@@ -11,8 +11,6 @@ import sys
 import datetime
 import time
 sys.path.append('CodePython/InputOutput/')
-sys.path.append('PhaseRetrieval2020')
-sys.path.append('PhaseRetrieval2020/InputOutput')
 import os
 from InputOutput.pagailleIO import saveEdf,openImage
 from Experiment import Experiment
@@ -35,7 +33,7 @@ if __name__ == "__main__":
     exp_dict['filepath']='../Results/SIMAP_FilNylon_mars2021/'
     # Define algorithm parameters
     exp_dict['sampleSampling']=4 # MUST BE AN INTEGER
-    exp_dict['nbExpPoints']=1 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
+    exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
     exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
@@ -63,9 +61,9 @@ if __name__ == "__main__":
         else:
             raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
         Nbin=len(SampleImageTmp)
-        # White=White[exp_dict['margin']:-exp_dict['margin'],exp_dict['margin']:-exp_dict['margin']]
         if pointNum==0:
             PropagImage.append(PropagImageTmp)#[exp_dict['margin']:-exp_dict['margin'],exp_dict['margin']:-exp_dict['margin']])#/White)
+            WhiteImage=White
         SampleImage.append(SampleImageTmp)#[exp_dict['margin']:-exp_dict['margin'],exp_dict['margin']:-exp_dict['margin']])#/White)
         ReferenceImage.append(ReferenceImageTmp)#[exp_dict['margin']:-exp_dict['margin'],exp_dict['margin']:-exp_dict['margin']])#/White)
         SubImage.append(ReferenceImage[pointNum]-SampleImage[pointNum]/PropagImage[0])
@@ -77,7 +75,7 @@ if __name__ == "__main__":
     acquisitions["PropagImage"]=np.asarray(PropagImage)
     acquisitions["SubImage"]=np.asarray(SubImage)
     acquisitions["AbsImage"]=np.asarray(AbsImage)
-    acquisitions["White"]=np.asarray(White)
+    acquisitions["White"]=np.asarray(WhiteImage)
 
     exp_dict=experiment.createExpDict(exp_dict)
     
@@ -97,7 +95,7 @@ if __name__ == "__main__":
         os.mkdir(expImagesFilePath+'membraneThickness/')
 #    
         saveEdf(PropagImage[0], expImagesFilePath+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+'.edf')
-        saveEdf(White, expImagesFilePath+'White_'+str(exp_dict['expID'])+'_'+'.edf')
+        saveEdf(WhiteImage, expImagesFilePath+'White_'+str(exp_dict['expID'])+'_'+'.edf')
 #   
         for pointNum in range(exp_dict['nbExpPoints']):
             txtPoint = '%2.2d' % pointNum

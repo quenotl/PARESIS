@@ -24,7 +24,7 @@
         <sampleType>AnalyticalSample</sampleType>
         <detectorName>flatPanelSimap</detectorName>
         <sourceName>simap</sourceName>
-        <meanShotCount>124000</meanShotCount>
+        <meanShotCount>169000</meanShotCount>
     </experiment>
    
     <experiment>
