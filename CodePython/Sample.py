@@ -142,6 +142,14 @@ class AnalyticalSample(Sample):
                 plt.colorbar()
                 plt.show()
                 return                
+            if self.myGeometryFunction=="CreateSampleSphere":
+                self.myGeometry =CreateSampleSphere(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
+                print("Nylon Sphere Geometry")
+                plt.figure()
+                plt.imshow(self.myGeometry)
+                plt.colorbar()
+                plt.show()
+                return       
             if self.myGeometryFunction=="generateContrastPhantom":
                 self.myGeometry=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=90)
                 return
@@ -153,21 +161,26 @@ class AnalyticalSample(Sample):
             if self.myGeometryFunction=="getMembraneFromFile":
                 self.myGeometry.append(getMembraneFromFile(self.myMembraneFile,studyDimensions,studyPixelSize,oversamp,pointNum))
                 self.myGeometry.append(np.ones((studyDimensions[0], studyDimensions[1]))*self.myPMMAThickness*1e-6)
+                self.myGeometry=np.array(self.myGeometry)
                 return
             if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                 self.myGeometry.append(getMembraneSegmentedFromFile(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
                 self.myGeometry.append(np.ones((studyDimensions[0], studyDimensions[1]))*self.myPMMAThickness*1e-6)
+                self.myGeometry=np.array(self.myGeometry)
                 return
         
         if self.myGeometryFunction=="get_my_thickness":
             self.myGeometry=[]
             self.myGeometry.append(np.ones((studyDimensions[0], studyDimensions[1]))*self.myThickness*1e-6)
+            self.myGeometry=np.array(self.myGeometry)
             return
         
         raise ValueError("Could not define sample geometry")
         
         
     def setWave(self,incidentWave, energy):
+        if self.myGeometry.ndim != 3:
+            raise Exception("Sample Geometry has the wrong nb of dim [material, x, y]")
         k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
         delta=np.zeros(len(self.myMaterials))
         beta=np.zeros(len(self.myMaterials))
