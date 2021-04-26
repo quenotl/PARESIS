@@ -24,7 +24,7 @@ def CreateSampleSphere(myName, dimX, dimY, pixelSize):
             
             myRadius=float(getText(currentSample.getElementsByTagName("myRadius")[0]))
 
-    Sample=np.zeros((dimX,dimY))
+    Sample=np.zeros((1,dimX,dimY))
     
     myRadius=myRadius/pixelSize
     
@@ -32,7 +32,7 @@ def CreateSampleSphere(myName, dimX, dimY, pixelSize):
         for j in range(dimY):
             dist=(dimY/2-i)**2+(dimY/2-j)**2
             if dist<myRadius**2:
-                Sample[i,j]=2*np.sqrt(myRadius**2-(dimY/2-j)**2-(dimX/2-i)**2)
+                Sample[0,i,j]=2*np.sqrt(myRadius**2-(dimY/2-j)**2-(dimX/2-i)**2)
             
 #    
 #    print('\nSample sohere geom')
