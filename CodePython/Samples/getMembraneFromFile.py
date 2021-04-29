@@ -89,10 +89,6 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
     Offsetx=0
     Offsety=0
     offsetCorr=0
-    meanRad=0
-    
-    print("max x pix", np.max(parameters[:,1])/pixSize)
-    print("max y pix", np.max(parameters[:,0])/pixSize)
     
     for nlayer in range(sample.myNbOfLayers):
         # if pointNum!=0 or nmem!=0:
@@ -100,14 +96,10 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
         maxOffsety=membraneSizeinFiley/pixSize-dimY
         Offsetx=np.random.randint(margin2,maxOffsetx-margin2)
         Offsety=np.random.randint(margin2,maxOffsety-margin2)
-        print("maxOffsetx", maxOffsetx)
-        print("maxOffsety", maxOffsety)
-        print("dimX", dimX)
-        print("dimY", dimY)
+
         
         for i in range(Nsphere):
             radFloat=parameters[i,2]/pixSize
-            meanRad+=radFloat*pixSize
             radInt=int(np.floor(radFloat))+1
             xdata=parameters[i,0]
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
@@ -121,8 +113,7 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
                         dist=np.sqrt(((ii+x-xfloat))**2+((jj+y-yfloat))**2)
                         if dist<radFloat:
                             membrane[x+ii,y+jj]+=2*np.sqrt(radFloat**2-dist**2)
-                            
-    print("Mean rad:", meanRad/Nsphere)
+
     membrane=membrane[margin:-margin,margin:-margin]
     return membrane*pixSize*1e-6
 
@@ -140,8 +131,8 @@ if __name__ == "__main__":
     number_of_positions=1
     imageMargins=10
     overSamp=4
-    Nx=200 #Detector size
-    Ny=2500
+    Nx=2500 #Detector size
+    Ny=2000
     dimX=int((Nx+2*imageMargins)*overSamp)
     dimY=int((Ny+2*imageMargins)*overSamp)
     dist_source_sample=0.1 #in m
