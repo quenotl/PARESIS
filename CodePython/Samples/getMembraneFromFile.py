@@ -123,36 +123,26 @@ if __name__ == "__main__":
     class Membrane():
         def __init__(self):
             self.myMembraneFile='Membranes/CuSn.txt'
-            self.myMeanSphereRadius=6
-            self.myNbOfLayers=1
+            self.myMeanSphereRadius=10
+            self.myNbOfLayers=2
             return
     
     # PARAMETERS
-    number_of_positions=1
+    number_of_positions=10
     imageMargins=10
     overSamp=4
-    Nx=2500 #Detector size
-    Ny=2000
+    Nx=200 #Detector size
+    Ny=2500
     dimX=int((Nx+2*imageMargins)*overSamp)
     dimY=int((Ny+2*imageMargins)*overSamp)
-    dist_source_sample=0.1 #in m
-    dist_sample_detector=0.5 #in m
+    dist_source_membrane=0.18 #in m
+    dist_membrane_detector=0.82 #in m
     detector_pixel_size=75 #in um
-    magnification=(dist_sample_detector+dist_source_sample)/dist_source_sample
+    magnification=(dist_membrane_detector+dist_source_membrane)/dist_source_membrane
     pixSize=detector_pixel_size/overSamp/magnification
     
     membrane=Membrane()
     storingFolder='Membranes/CuSn_dim'+str(Nx)+'x'+str(Ny)+'_oversamp'+str(overSamp)+'_margin'+str(imageMargins)+'_radius'+str(membrane.myMeanSphereRadius)+'/'
-    
-    maxx=(9813/4.57*membrane.myMeanSphereRadius)
-    maxy=(8178/4.57*membrane.myMeanSphereRadius)
-    maxDx=maxx/pixSize
-    maxDy=maxy/pixSize
-
-    print("Maximum size of the membrane you can generate with those parameters: %d x %d um" %(maxx ,maxy) )
-    print("The one you are trying to create is %d x %d um" %(dimX*pixSize, dimY*pixSize))
-    # if dimX>maxDx or dimY>maxDy:
-    #     raise Exception("The segmented membrane is too small for the one you are trying to generate. (You can try increasing the sphere mean radius)")
     
     if not os.path.exists(storingFolder):
         os.mkdir(storingFolder)
@@ -164,6 +154,6 @@ if __name__ == "__main__":
         plt.imshow(membraneThickness)
         plt.colorbar()
         plt.show()
-        # txtPoint = '%2.2d' % pointNum
-        # saveEdf(membraneThickness, storingFolder+txtPoint+'.edf')
+        txtPoint = '%2.2d' % pointNum
+        saveEdf(membraneThickness, storingFolder+txtPoint+'.edf')
     
