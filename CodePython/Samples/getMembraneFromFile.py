@@ -43,7 +43,7 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
     margin2=int(np.floor(margin/2))
     
     if sample.myMembraneFile.split('/')[-1]=='CuSn.txt':
-        corrFactor=sample.myMeanSphereRadius/6 #to adapt the scale to the mean sphere radius desired
+        corrFactor=sample.myMeanSphereRadius/4.57 #to adapt the scale to the mean sphere radius desired
         membraneSizeinFilex=int(np.floor(8102))*corrFactor+sample.myMeanSphereRadius
         membraneSizeinFiley=int(np.floor(9740))*corrFactor+sample.myMeanSphereRadius
     else: 
@@ -153,8 +153,8 @@ if __name__ == "__main__":
     membrane=Membrane()
     storingFolder='Membranes/CuSn_dim'+str(Nx)+'x'+str(Ny)+'_oversamp'+str(overSamp)+'_margin'+str(imageMargins)+'_radius'+str(membrane.myMeanSphereRadius)+'/'
     
-    maxx=(9813/6*membrane.myMeanSphereRadius)
-    maxy=(8178/6*membrane.myMeanSphereRadius)
+    maxx=(9813/4.57*membrane.myMeanSphereRadius)
+    maxy=(8178/4.57*membrane.myMeanSphereRadius)
     maxDx=maxx/pixSize
     maxDy=maxy/pixSize
 
