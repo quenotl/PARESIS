@@ -88,6 +88,7 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
     Offsetx=0
     Offsety=0
     offsetCorr=0
+    meanRad=0
     
     for nlayer in range(sample.myNbOfLayers):
         # if pointNum!=0 or nmem!=0:
@@ -98,6 +99,7 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
         
         for i in range(Nsphere):
             radFloat=parameters[i,2]/pixSize
+            meanRad+=radFloat
             radInt=int(np.floor(radFloat))+1
             xdata=parameters[i,0]
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
@@ -112,21 +114,22 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
                         if dist<radFloat:
                             membrane[x+ii,y+jj]+=2*np.sqrt(radFloat**2-dist**2)
                             
+    print("Mean rad:", meanRad/Nsphere)
     membrane=membrane[margin:-margin,margin:-margin]
     return membrane*pixSize*1e-6
 
-    
+
 if __name__ == "__main__":
 
     class Membrane():
         def __init__(self):
             self.myMembraneFile='Membranes/CuSn.txt'
-            self.myMeanSphereRadius=10
-            self.myNbOfLayers=2
+            self.myMeanSphereRadius=6
+            self.myNbOfLayers=1
             return
     
     # PARAMETERS
-    number_of_positions=10
+    number_of_positions=1
     imageMargins=10
     overSamp=4
     Nx=200 #Detector size
@@ -140,7 +143,7 @@ if __name__ == "__main__":
     pixSize=detector_pixel_size/overSamp/magnification
     
     membrane=Membrane()
-    storingFolder='Membranes/CuSn_dim'+str(Nx)+'x'+str(Ny)+'_oversamp'+str(overSamp)+'_radius'+str(imageMargins)+'_margin'+str(membrane.myMeanSphereRadius)+'/'
+    storingFolder='Membranes/CuSn_dim'+str(Nx)+'x'+str(Ny)+'_oversamp'+str(overSamp)+'_margin'+str(imageMargins)+'_radius'+str(membrane.myMeanSphereRadius)+'/'
     
     maxx=(9813/6*membrane.myMeanSphereRadius)
     maxy=(8178/6*membrane.myMeanSphereRadius)
@@ -162,6 +165,6 @@ if __name__ == "__main__":
         plt.imshow(membraneThickness)
         plt.colorbar()
         plt.show()
-        txtPoint = '%2.2d' % pointNum
-        saveEdf(membraneThickness, storingFolder+txtPoint+'.edf')
+        # txtPoint = '%2.2d' % pointNum
+        # saveEdf(membraneThickness, storingFolder+txtPoint+'.edf')
     
