@@ -14,6 +14,18 @@
         <exitingWindowMaterial>Be</exitingWindowMaterial>
         <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>
         <myEnergySampling unit="keV">0.5</myEnergySampling>
+        <myTargetMaterial>Mo</myTargetMaterial>
+    </source>
+    
+    <source>
+        <name>Theo1</name>
+        <myType>Polychromatic</myType>
+        <mySize unit="um">20</mySize>
+        <sourceVoltage unit="kVp">40</sourceVoltage>
+        <exitingWindowMaterial>Be</exitingWindowMaterial>
+        <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>
+        <myEnergySampling unit="keV">2</myEnergySampling>
+        <myTargetMaterial>Mo</myTargetMaterial>
     </source>
     
 </listSources>

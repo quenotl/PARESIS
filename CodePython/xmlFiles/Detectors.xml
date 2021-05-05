@@ -29,4 +29,15 @@
         <myPSF unit="pixel">0</myPSF>
     </detector>
     
+    <detector>
+        <name>SPC</name>
+        <myDimensions>
+            <dimX>100</dimX>
+            <dimY>900</dimY>
+        </myDimensions>
+        <myPixelSize unit="um">75</myPixelSize>
+        <myPSF unit="pixel">0</myPSF>
+        <myEnergyLimit unit="keV">30</myEnergyLimit>
+    </detector>
+    
 </listDetectors>

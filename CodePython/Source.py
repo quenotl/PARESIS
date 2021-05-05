@@ -21,11 +21,11 @@ class Source:
         self.xmlSourcesFileName="xmlFiles/Sources.xml"
         self.xmldocSources = minidom.parse(self.xmlSourcesFileName)
         self.myName=""
-        self.mySpectrumPath=""
         self.mySpectrum=[]
         self.mySize=0.
         self.myType=None
         self.exitingWindowMaterial=None
+        self.myTargetMaterial='W'
         
     def defineCorrectValuesSource(self):
         for currentSource in self.xmldocSources.documentElement.getElementsByTagName("source"):
@@ -40,7 +40,9 @@ class Source:
                     for node in currentSource.childNodes:
                         if node.localName=="exitingWindowMaterial":
                             self.exitingWindowMaterial=self.getText(currentSource.getElementsByTagName("exitingWindowMaterial")[0])
-                            self.exitingWindowThickness=float(self.getText(currentSource.getElementsByTagName("exitingWindowThickness")[0]))
+                            self.exitingWindowThickness=float(self.getText(currentSource.getElementsByTagName("exitingWindowThickness")[0]))                            
+                        if node.localName=="myTargetMaterial": #Option to chose the target material
+                            self.myTargetMaterial=self.getText(currentSource.getElementsByTagName("myTargetMaterial")[0])
                 if self.myType=="Monochromatic":
                     self.myEnergySampling=1
                 return
@@ -57,8 +59,8 @@ class Source:
             return
         
         if self.myType=="Polychromatic":
-            
-            s = sp.Spek(kvp=self.myVoltage,th=12)
+             
+            s = sp.Spek(kvp=self.myVoltage,th=12, targ=self.myTargetMaterial)
             if self.exitingWindowMaterial is not None:
                 s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
             spectrum=s.get_spectrum()
@@ -110,4 +112,36 @@ class Source:
     
     def getText(self,node):
         return node.childNodes[0].nodeValue
+    
+    
+if __name__ == "__main__":
+    s = sp.Spek(kvp=40,th=12, targ='Mo')
+    s.filter('Al', 0.1)
+    spectrum=s.get_spectrum()
+    
+    sumEn=0
+    sumFlux=0
+    stdDev=0
+    
+    for i in range(len(spectrum[0])):
+        sumEn+=spectrum[0][i]*spectrum[1][i]
+        sumFlux+=spectrum[1][i]
+    meanEn=sumEn/sumFlux
+    for i in range(len(spectrum[0])):
+        stdDev+=(meanEn-spectrum[0][i])**2*spectrum[1][i]
+    
+    stdDev=np.sqrt(stdDev/(sumFlux))
+    
+    print("Energy mean:", sumEn/sumFlux)
+    print("Energy stdDev:", stdDev)
+    
+    plt.figure()
+    plt.plot(spectrum[0],spectrum[1]/np.max(spectrum[1]))
+    plt.xlabel('Energy (keV)')
+    # plt.savefig('/Users/quenot/Library/Mobile Documents/com~apple~CloudDocs/Thèse/ComparaisonSimu/W40kVp.png')
+    plt.show()
+    
+    
+    
+    
     

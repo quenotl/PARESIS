@@ -4,15 +4,23 @@
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleCylindre</myGeometryFunction>
         <myRadius unit="um">100</myRadius>
-        <myOrientation unit="degree">81.56</myOrientation> 
+        <myOrientation unit="degree">41</myOrientation> 
         <myMaterials>Nylon</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>PMMA_sphere</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>CreateSampleSphere</myGeometryFunction>
+        <myRadius unit="um">100</myRadius>
+        <myMaterials>PMMA</myMaterials>
     </sample>
     
     <sample>
         <name>Mask_CuSn_From_edf</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn_dim200x200_oversamp4_margin10</myMembraneFile>
+        <myMembraneFile>Samples/Membranes/CuSn_dim100x900_oversamp4_margin10_radius10</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
     </sample>
@@ -24,8 +32,19 @@
         <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
-        <myMeanSphereRadius>6</myMeanSphereRadius>
+        <myMeanSphereRadius>30</myMeanSphereRadius>
         <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_Punched_From_txt</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembranePunched</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
+        <myPlateThickness unit="um">400</myPlateThickness>
+        <myMaterials>Cu</myMaterials>
+        <myMeanSphereRadius>6</myMeanSphereRadius>
+        <myNbOfLayers>1</myNbOfLayers>
     </sample>
     
     <sample>
@@ -33,7 +52,22 @@
         <myType>sample_of_interest</myType>
         <myGeometryFunction>openContrastPhantom</myGeometryFunction>
         <myGeometryFolder>ContrastPhantom/CP_Simap_100p0overSampx4_angle90/</myGeometryFolder>
-        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Vacuum,Vacuum,Solid Water</myMaterials>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>ContrastPhantomThéo</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
+        <myGeometryFolder>ContrastPhantom/CP_pixsize37um_480x3680_angle50deg/</myGeometryFolder>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>ContrastPhantomTheo</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>generateContrastPhantom</myGeometryFunction>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
     </sample>
     
     <sample>
@@ -43,7 +77,6 @@
         <myMembraneFile>Samples/Membranes/membraneFe90_21p948um_overSampx10.edf</myMembraneFile>
         <myMaterials>Fe,PMMA</myMaterials>
         <myPMMAThickness unit="um">2000</myPMMAThickness>
-        <myNbOfLayers>1</myNbOfLayers>
     </sample>
     
     <sample>
@@ -53,7 +86,6 @@
         <myMembraneFile>Samples/Membranes/membraneFe90_Simap_21p4um_overSampx4.edf</myMembraneFile>
         <myMaterials>Fe,PMMA</myMaterials>
         <myPMMAThickness unit="um">2000</myPMMAThickness>
-        <myNbOfLayers>3</myNbOfLayers>
     </sample>
     
     <sample>
@@ -63,7 +95,6 @@
         <myMembraneFile>Samples/Membranes/membraneFe90_50p0um_overSampx4.edf</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>Fe,PMMA</myMaterials>
-        <myNbOfLayers>3</myNbOfLayers>
     </sample>
     
     <sample>
@@ -79,7 +110,6 @@
         <myType>volume</myType>
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
         <myMaterials>Air</myMaterials>
-        <myThickness unit="um">694000</myThickness>
     </sample>
     
 </listSamples>

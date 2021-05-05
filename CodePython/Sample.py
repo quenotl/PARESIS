@@ -11,6 +11,7 @@ from xml.dom import minidom
 import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
+from Samples.getPunchedMembrane import getMembranePunched
 import xlrd
 from matplotlib import pyplot as plt
 from Samples.createSphere import CreateSampleSphere
@@ -43,9 +44,14 @@ class Sample:
                 if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
                     self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
+                if self.myGeometryFunction=="getMembranePunched":
+                    self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
+                    self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
+                    self.myPlateThickness=int(self.getText(currentSample.getElementsByTagName("myPlateThickness")[0]))
                     
                 if self.myGeometryFunction=="get_my_thickness":
-                    self.myThickness=float(self.getText(currentSample.getElementsByTagName("myThickness")[0]))
+                    if self.myName!="air_volume":
+                        self.myThickness=float(self.getText(currentSample.getElementsByTagName("myThickness")[0]))
                 if self.myGeometryFunction=="getVolumesFromFiles":
                     self.myGeometriesFolder=self.getText(currentSample.getElementsByTagName("myGeometriesFolder")[0])
                     self.myNumberOfSlice=int(self.getText(currentSample.getElementsByTagName("myNumberOfSlice")[0]))
@@ -59,7 +65,6 @@ class Sample:
                 if self.myGeometryFunction=="openContrastPhantom":
                     self.myGeometryFolder=self.getText(currentSample.getElementsByTagName("myGeometryFolder")[0])
 
-                
                 return
         
         raise ValueError("Sample not found in the xml file")
@@ -124,12 +129,8 @@ class Sample:
 class AnalyticalSample(Sample):
     def __init__(self):
         Sample.__init__(self)
-        
         self.delta=[]
-        self.beta=[]
-        self.myGeometry=[]
-        self.membranePixelSize=0
-        
+        self.beta=[]        
         
     def getMyGeometry(self,studyDimensions, studyPixelSize,oversamp, pointNum=0):
         #Returns a list of 2D arrays containing the thickness of each material of the object
@@ -152,9 +153,11 @@ class AnalyticalSample(Sample):
                 return       
             if self.myGeometryFunction=="generateContrastPhantom":
                 self.myGeometry=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=90)
+                self.myGeometry=np.array(self.myGeometry)
                 return
             if self.myGeometryFunction=="openContrastPhantom":
                 self.myGeometry=openContrastPhantom(self.myGeometryFolder,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp, angle=90)
+                self.myGeometry=np.array(self.myGeometry)
                 return
         
         if self.myType=="membrane":
@@ -166,6 +169,10 @@ class AnalyticalSample(Sample):
             if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                 self.myGeometry.append(getMembraneSegmentedFromFile(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
                 self.myGeometry.append(np.ones((studyDimensions[0], studyDimensions[1]))*self.myPMMAThickness*1e-6)
+                self.myGeometry=np.array(self.myGeometry)
+                return
+            if self.myGeometryFunction=="getMembranePunched":
+                self.myGeometry.append(getMembranePunched(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
                 self.myGeometry=np.array(self.myGeometry)
                 return
         
@@ -194,14 +201,14 @@ class AnalyticalSample(Sample):
             for energyData, betaEn in self.beta[imat]:
                 if energyData==energy:
                     beta[imat]=betaEn
-                    print(energyData, betaEn)
+                    # print(energyData, betaEn)
             disturbedWave=np.exp((-1j*k*delta[imat]-k*beta[imat])*self.myGeometry[imat])*disturbedWave
             
-        print('Finished set wave through', self.myName)
+        # print('Finished set wave through', self.myName)
         return disturbedWave
     
             
-    def setWaveRT(self,incidentIntensity,incidentphi, energy, distFromSource):
+    def setWaveRT(self,incidentIntensity,incidentphi, energy):
         #Returns the intensity map after absorption in the object and the phase shift (specific to ray tracing)
         
         k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
@@ -229,7 +236,7 @@ class AnalyticalSample(Sample):
             disturbedIntensity=np.exp(-2*k*beta[imat]*self.myGeometry[imat])*disturbedIntensity
             disturbedPhi=disturbedPhi-k*delta[imat]*self.myGeometry[imat]
             
-        print('Finished setting wave through', self.myName)
+        # print('Finished setting wave through', self.myName)
         return disturbedIntensity, disturbedPhi
         
         

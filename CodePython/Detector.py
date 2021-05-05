@@ -22,7 +22,7 @@ class Detector:
         self.myPSF=0. #en pixel
         self.myEfficiencyLimit=100. #en kev
         self.margins=exp_dict['margin']
-        
+        self.myEnergyLimit=None
         
         
     def defineCorrectValuesDetector(self):
@@ -32,6 +32,11 @@ class Detector:
                 self.myDimensions=self.getMyDimensions(currentDetector)
                 self.myPixelSize=float(self.getText(currentDetector.getElementsByTagName("myPixelSize")[0]))
                 self.myPSF=float(self.getText(currentDetector.getElementsByTagName("myPSF")[0]))
+                
+                for node in currentDetector.childNodes:
+                    if node.localName=="myEnergyLimit":
+                        self.myEnergyLimit=float(self.getText(currentDetector.getElementsByTagName("myEnergyLimit")[0]))
+            
                 return
             
         raise ValueError("detector not found in xml file")
