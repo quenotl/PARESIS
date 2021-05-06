@@ -494,7 +494,7 @@ class Experiment:
         f.write("\nOversampling Factor: %g" %self.sampling)
         f.write("\nStudy dimensions: "+str(self.studyDimensions[0])+"x"+str(self.studyDimensions[1])+"pix")
         f.write("\nStudy pixel size: %gum" %self.studyPixelSize)
-        f.write("\nMean shot count: %g" %self.meanShotCount*self.oversampling**2)        
+        f.write("\nMean shot count: %g" %self.meanShotCount*self.sampling**2)        
         f.write("\nNumber of points: %g" %(self.nbPoints+1))       
         f.write("\nEntire computing time: %gs" %(time.time()-time0))   
         
