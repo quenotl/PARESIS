@@ -6,14 +6,14 @@ Created on Wed Jan 15 14:37:59 2020
 @author: quenot
 """
 
-from xml.dom import minidom
 import sys
 import datetime
 import time
 sys.path.append('CodePython/InputOutput/')
 import os
-from InputOutput.pagailleIO import saveEdf,openImage
+from InputOutput.pagailleIO import saveEdf
 from Experiment import Experiment
+# from ExperimentMultiprocess import Experiment
 import numpy as np
 
 
@@ -28,20 +28,20 @@ if __name__ == "__main__":
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="SIMAP_FilNylon_mars2021"
+    exp_dict['experimentName']="TheoreticalStudy"
     # Output filepath to store the result images
-    exp_dict['filepath']='../Results/SIMAP_FilNylon_mars2021/'
+    exp_dict['filepath']='../Results/TheoreticalStudy/'
     # Define algorithm parameters
     exp_dict['sampleSampling']=4 # MUST BE AN INTEGER
-    exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
+    exp_dict['nbExpPoints']=1 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
-    exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
+    exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
     now=datetime.datetime.now()
-    exp_dict['expID']=now.strftime("%Y%m%d-%H%M%S") 
+    exp_dict['expID']=now.strftime("%Y%m%d-%H%M%S") #define experiment ID
     
     SampleImage=[]
     ReferenceImage=[]
@@ -49,6 +49,7 @@ if __name__ == "__main__":
     AbsImage=[]
     SubImage=[]
     Geometry=[]
+    
     for pointNum in range(exp_dict['nbExpPoints']):
         print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
         experiment=Experiment(exp_dict, pointNum) 
@@ -76,8 +77,6 @@ if __name__ == "__main__":
     acquisitions["SubImage"]=np.asarray(SubImage)
     acquisitions["AbsImage"]=np.asarray(AbsImage)
     acquisitions["White"]=np.asarray(WhiteImage)
-
-    exp_dict=experiment.createExpDict(exp_dict)
     
     ##    SAVING
     if save: #Creates a text file with all experiment parameters

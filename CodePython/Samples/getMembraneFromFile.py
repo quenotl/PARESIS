@@ -131,12 +131,12 @@ if __name__ == "__main__":
     number_of_positions=10
     imageMargins=10
     overSamp=4
-    Nx=200 #Detector size
-    Ny=2500
+    Nx=100 #Detector size
+    Ny=900
     dimX=int((Nx+2*imageMargins)*overSamp)
     dimY=int((Ny+2*imageMargins)*overSamp)
-    dist_source_membrane=0.18 #in m
-    dist_membrane_detector=0.82 #in m
+    dist_source_membrane=0.58 #in m
+    dist_membrane_detector=0.62 #in m
     detector_pixel_size=75 #in um
     magnification=(dist_membrane_detector+dist_source_membrane)/dist_source_membrane
     pixSize=detector_pixel_size/overSamp/magnification

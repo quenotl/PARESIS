@@ -424,7 +424,6 @@ class Experiment:
 
         self.meanEnergy=self.meanEnergy/sumIntensity
                 
-        self.meanEnergy=self.meanEnergy/totalFlux
         print("MeanEnergy", self.meanEnergy)
         
         effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM

@@ -11,7 +11,7 @@ from xml.dom import minidom
 import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
-from Samples.getPunchedMembrane import getMembranePunched
+# from Samples.getPunchedMembrane import getMembranePunched
 import xlrd
 from matplotlib import pyplot as plt
 from Samples.createSphere import CreateSampleSphere

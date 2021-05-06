@@ -68,7 +68,7 @@ class Detector:
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
             incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
-        intensityBeforeDetection=self.resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
+        intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
         seed       = int(np.floor(time.time()*100%(2**32-1)))
         rs         = np.random.RandomState(seed)
         if self.myPSF!=0:
@@ -91,17 +91,17 @@ class Detector:
         dimY=int(self.getText(node.getElementsByTagName("dimY")[0]))+self.margins*2
         return np.array([dimX ,dimY])
     
-    @jit(nopython=True)
-    def resize(self,imageToResize,sizeX, sizeY):
-        Nx, Ny=imageToResize.shape
-        if Nx==sizeX and Ny==sizeY:
-            return imageToResize
-        
-        resizedImage=np.ones((sizeX,sizeY))
-        sampFactor=int(Nx/sizeX)
-        
-        for x0 in range(sizeX):
-            for y0 in range(sizeY):
-                resizedImage[x0,y0]=np.sum(imageToResize[int(np.floor(x0*sampFactor)):int(np.floor(x0*sampFactor+sampFactor)),int(np.floor(y0*sampFactor)):int(np.floor(y0*sampFactor+sampFactor))])
-                
-        return resizedImage
+@jit(nopython=True)
+def resize(imageToResize,sizeX, sizeY):
+    Nx, Ny=imageToResize.shape
+    if Nx==sizeX and Ny==sizeY:
+        return imageToResize
+    
+    resizedImage=np.ones((sizeX,sizeY))
+    sampFactor=int(Nx/sizeX)
+    
+    for x0 in range(sizeX):
+        for y0 in range(sizeY):
+            resizedImage[x0,y0]=np.sum(imageToResize[int(np.floor(x0*sampFactor)):int(np.floor(x0*sampFactor+sampFactor)),int(np.floor(y0*sampFactor)):int(np.floor(y0*sampFactor+sampFactor))])
+            
+    return resizedImage

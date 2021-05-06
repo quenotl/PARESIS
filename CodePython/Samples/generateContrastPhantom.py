@@ -6,25 +6,24 @@ Created on Wed Oct 28 15:05:44 2020
 @author: quenot
 """
 import numpy as np
-from numpy.fft import fftshift as fftshift
-from numpy.fft import ifftshift as ifftshift
-from numpy.fft import fft2 as fft2
-from numpy.fft import ifft2 as ifft2
 from matplotlib import pyplot as plt
 from skimage.transform import radon, rescale
 import json
 import os
 from InputOutput.pagailleIO import saveEdf,openImage
 import glob
+from numba import jit
 
 def generateContrastPhantom(dimX, dimY, pixsize, angle):
-    pixsize=pixsize/1000 #m to mm
+    
+    ##Everything in mm
+    pixsize=pixsize/1000 #um to mm
     geometry=[]
     Slice=np.zeros(((13,dimY,dimY)))
     lines=np.zeros(dimY)
     projTot=np.zeros((dimX, dimY))
     smallTubesRadius=2 #mm
-    supportRadius=15
+    supportRadius=15 #mm
     TubesCenters=[[22,7],[16.4,4.7],[10,7],[6,12.5],[6,19.5],[10,25],[16.4,27],[22,25],[21,16],[11,16],[16,11],[16,21]]
     Nmat=12        
     TubesCenters=np.asarray(TubesCenters, dtype=np.float64) #mm
@@ -32,6 +31,7 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     
     sliceTotMat=np.zeros((dimY, dimY))
     
+    # Everything in pix
     smallTubesRadiuspix=smallTubesRadius/pixsize #pix
     smallTubesRadiuspixInt=int(np.floor(smallTubesRadiuspix)+2) #pixEntier
     supportRadiuspix=supportRadius/pixsize
@@ -105,6 +105,7 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     plt.show()
     
     return geometry
+
     
 def openContrastPhantom(myGeometryFolder,dimX, dimY, pixsize,oversamp, angle):
     pixsizeStr='%4.1f'%(pixsize*oversamp)
@@ -124,17 +125,31 @@ def openContrastPhantom(myGeometryFolder,dimX, dimY, pixsize,oversamp, angle):
         
     
 if __name__ == "__main__":
-    
-    oversamp=1
-    Ny=1500*oversamp
-    Nx=500*oversamp
-    angle =90
-    pixelSize=21.4/oversamp #um
-    geometry2=generateContrastPhantom(Nx, Ny, pixelSize, angle)
+        # PARAMETERS
+    number_of_positions=10
+    imageMargins=10
+    overSamp=4
+    Nx=100 #Detector size
+    Ny=900
+    dimX=int((Nx+2*imageMargins)*overSamp)
+    dimY=int((Ny+2*imageMargins)*overSamp)
+    dist_source_membrane=0.6 #in m
+    dist_membrane_detector=0.6 #in m
+    detector_pixel_size=75 #in um
+    magnification=(dist_membrane_detector+dist_source_membrane)/dist_source_membrane
+    pixSize=detector_pixel_size/overSamp/magnification #in um
+
+    angle=50
+    geometry2=generateContrastPhantom(dimX, dimY, pixSize, angle)
     dim=geometry2[0].shape
 #    geometry=geometry.tolist()
-
-    filepath="ContrastPhantom/CP_"+str(pixelSize*oversamp).replace(".","p")+"_angle"+str(angle)
-    os.mkdir(filepath)
+    
+    pixsizestr='%2.2d' % (pixSize*overSamp)
+    filepath="ContrastPhantom/CP_pixsize"+pixsizestr.replace(".","p")+"um_"+str(dimX)+"x"+str(dimY)+"_angle"+str(angle)+'deg'
+    
+    if not os.path.exists(filepath):
+        os.mkdir(filepath)
+        
     for i in range(13):
-        saveEdf(geometry2[i], filepath+"/mat"+str(i)+".edf")
+        txtPoint = '%2.2d' % i
+        # saveEdf(geometry2[i], filepath+"/mat"+txtPoint+".edf")
