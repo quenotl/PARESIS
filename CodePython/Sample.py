@@ -64,6 +64,8 @@ class Sample:
                 if self.myGeometryFunction=="get_my_thickness":
                     if self.myName!="air_volume":
                         self.myThickness=float(self.getText(currentSample.getElementsByTagName("myThickness")[0]))
+                if self.myGeometryFunction=="getSampleFromFile":
+                    self.mySampleFile=self.getText(currentSample.getElementsByTagName("mySampleFile")[0])
                 if self.myGeometryFunction=="getVolumesFromFiles":
                     self.myGeometriesFolder=self.getText(currentSample.getElementsByTagName("myGeometriesFolder")[0])
                     self.myNumberOfSlice=int(self.getText(currentSample.getElementsByTagName("myNumberOfSlice")[0]))
@@ -173,6 +175,14 @@ class AnalyticalSample(Sample):
         """
         #Returns a list of 2D arrays containing the thickness of each material of the object
         if self.myType=="sample_of_interest":
+            if self.myGeometryFunction=="getSampleFromFile":
+                self.myGeometry = np.load(self.mySampleFile)
+                print("Sample Geometry")
+                plt.figure()
+                plt.imshow(self.myGeometry[0])
+                plt.colorbar()
+                plt.show()
+                return   
             if self.myGeometryFunction=="CreateSampleCylindre":
                 self.myGeometry, self.myRadius=CreateSampleCylindre(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
                 print("Fylon Wire Geometry")
