@@ -18,6 +18,7 @@ from Samples.createSphere import CreateSampleSphere
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import time
 from Samples.HumbleCircle import CreateSampleSphereMultiple
+from numba import jit 
 
 class Sample:
     def __init__(self):
@@ -30,6 +31,16 @@ class Sample:
         
         
     def defineCorrectValuesSample(self):
+        """
+        gets all sample parameters from xml file
+
+        Raises:
+            ValueError: Sample not found in the xml file.
+
+        Returns:
+            None.
+
+        """
         for currentSample in self.xmldocSample.documentElement.getElementsByTagName("sample"):
             correctSample = self.getText(currentSample.getElementsByTagName("name")[0])
   
@@ -75,6 +86,16 @@ class Sample:
     
             
     def getDeltaBeta(self, sourceSpectrum):
+        """
+        gets each materials delta and beta parameters for every energy of the spectrum
+
+        Args:
+            sourceSpectrum (list of tuples): spectrum of the source containing energy (in keV) and weights.
+
+        Returns:
+            None.
+
+        """
         energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
         print("Materials :", self.myMaterials)
         pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
@@ -93,7 +114,7 @@ class Sample:
                         row=row+3
                         for energy,_ in sourceSpectrum:
                             currentCellValue=sh.cell(row,col).value
-                            if energy*1000<currentCellValue:
+                            if energy*1000<currentCellValue: #E is in keV in the spectrum and in eV in the tables delta-beta file
                                 delta.append((energy,0))
                                 beta.append((energy,1))
                                 print("No delta beta values under",currentCellValue, "eV")
@@ -134,6 +155,22 @@ class AnalyticalSample(Sample):
         self.beta=[]        
         
     def getMyGeometry(self,studyDimensions, studyPixelSize,oversamp, pointNum=0):
+        """
+        Sets sample geometry maps for each of their materials geometry[material, x, y]
+
+        Args:
+            studyDimensions (tuple): (Dimx, Dimy).
+            studyPixelSize (float): voxel size in the considered plane in um (taking into account the oversampling).
+            oversamp (int): oversampling compared to detector pixels.
+            pointNum (int, optional): number of the calculated point (only useful to move the membrane between each point). Defaults to 0.
+
+        Raises:
+            ValueError: Could not define sample geometry means that the case was not found.
+
+        Returns:
+            None.
+
+        """
         #Returns a list of 2D arrays containing the thickness of each material of the object
         if self.myType=="sample_of_interest":
             if self.myGeometryFunction=="CreateSampleCylindre":
@@ -196,6 +233,20 @@ class AnalyticalSample(Sample):
         
         
     def setWave(self,incidentWave, energy):
+        """
+        sets waves through the sample
+
+        Args:
+            incidentWave (2d numpy array): wave before the sample.
+            energy (float): considered energy in keV.
+
+        Raises:
+            Exception: Sample Geometry has the wrong nb of dim [material, x, y].
+
+        Returns:
+            disturbedWave (2d numpy array): wave after the sample.
+
+        """
         if self.myGeometry.ndim != 3:
             raise Exception("Sample Geometry has the wrong nb of dim [material, x, y]")
         k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
@@ -219,8 +270,19 @@ class AnalyticalSample(Sample):
     
             
     def setWaveRT(self,incidentIntensity,incidentphi, energy):
-        #Returns the intensity map after absorption in the object and the phase shift (specific to ray tracing)
-        
+        """
+        sets intensity and phase through the sample
+
+        Args:
+            incidentIntensity (2d numpy array): DESCRIPTION.
+            incidentphi (2d numpy array): DESCRIPTION.
+            energy (float): current energy in keV.
+
+        Returns:
+            disturbedIntensity (2d numpy array): intensity after attenuation of the sample.
+            disturbedPhi (2d numpy array): phase shift due to the sample.
+
+        """        
         k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
 
         #Get delta and beta of the materials for the considered energy

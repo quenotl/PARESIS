@@ -28,6 +28,16 @@ class Source:
         self.myTargetMaterial='W'
         
     def defineCorrectValuesSource(self):
+        """
+        gets all the source parameters from the xml file
+
+        Raises:
+            ValueError: Source not found in the xml file.
+
+        Returns:
+            None.
+
+        """
         for currentSource in self.xmldocSources.documentElement.getElementsByTagName("source"):
             correctSource = self.getText(currentSource.getElementsByTagName("name")[0])
             if correctSource == self.myName:
@@ -50,17 +60,26 @@ class Source:
         raise ValueError("Source not found in the xml file")
             
     def setMySpectrum(self):
-        
+        """
+        sets the source spectrum from xml file value for monochromatic or Spekpy for polychromatic
+
+        Returns:
+            None.
+
+        """
 #        print("type de source:", self.myType)
+
+        # Monochromatic source case
         if self.myType=="Monochromatic":
-            
             self.mySpectrum.append((float(self.getText(self.currentSource.getElementsByTagName("myEnergy")[0])),1))
             spectrum=self.mySpectrum
             return
         
+        # Polychromatic source case
         if self.myType=="Polychromatic":
-             
+            #get spectrum from spekpy
             s = sp.Spek(kvp=self.myVoltage,th=12, targ=self.myTargetMaterial)
+            #taking into account exiting filter?
             if self.exitingWindowMaterial is not None:
                 s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
             spectrum=s.get_spectrum()
@@ -68,11 +87,12 @@ class Source:
             plt.figure()
             plt.plot(spectrum[0],spectrum[1])
             plt.xlabel('Energy (keV)')
+            plt.title("Source filtered spectrum")
             plt.show()
             
+            #re-sampling at sourcre energy sampling (to get faster calculation at the end)
             energyplot=[]
             weightplot=[]
-            
             Nen=len(spectrum[0])
             Nbin=int(np.ceil(Nen/self.myEnergySampling/2))
             n=0
@@ -103,6 +123,7 @@ class Source:
             plt.figure()
             plt.plot(energyplot,weightplot)
             plt.xlabel('Energy (keV)')
+            plt.title("Resampled spectrum")
             plt.show()
             
             return

@@ -6,12 +6,6 @@ Created on Thu Apr 29 16:47:58 2021
 @author: quenot
 """
 import numpy as np
-from ctypes import *
-# fastloopm=CDLL("fastloopmodule.so")
-# from fastloop import fastloop
-from time import time
-import ctypes
-from scipy import ndimage, LowLevelCallable
 from numba import jit 
 
 def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,studyPixelSize):
@@ -72,6 +66,23 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
 
 @jit(nopython=True)
 def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, DyFloor):
+    """
+    Accelerated part of the refraction calculation
+
+    Args:
+        Nx (int): shape[0] of the intensity refracted.
+        Ny (int): shape[1] of the intensity refracted.
+        intensityRefracted (2d numpy array): intensity before propag.
+        intensityRefracted2 (2d numpy array): intensity after propag.
+        Dy (2d numpy array): Displacement along x (in voxel).
+        Dx (2d numpy array): Displacement along y (in voxel).
+        DxFloor (2d numpy array): floored displacement.
+        DyFloor (2d numpy array): floored displacement.
+
+    Returns:
+        intensityRefracted2 (2d numpy array): intensity after propag.
+
+    """
     for i in range(Nx):
         for j in range(Ny):
             Iij=intensityRefracted[i,j]

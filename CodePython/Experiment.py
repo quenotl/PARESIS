@@ -103,6 +103,20 @@ class Experiment:
             
         
     def defineCorrectValues(self, exp_dict):
+        """
+        Initializes every compound parameters before calculations
+
+        Args:
+            exp_dict (dictionnary): algorithm parameters.
+
+        Raises:
+            Exception: sample type not defined.
+            ValueError: experiment not found in xml file.
+
+        Returns:
+            None.
+
+        """
         #Initialize object source and detector
         self.mySource=Source()
         self.myDetector=Detector(exp_dict)
@@ -146,6 +160,13 @@ class Experiment:
     
     
     def getStudyDimensions(self):
+        """
+        Calculates the study dimensions considereing the geometry of the set up, the field of view and the sample pixels oversampling
+
+        Returns:
+            None.
+
+        """
         self.precision=(self.myDetector.myPixelSize/self.sampling/self.distObjectToDetector)
         self.studyDimensions=self.myDetector.myDimensions*int(self.sampling)
         self.studyDimensions[0]=int(self.studyDimensions[0])
@@ -154,6 +175,19 @@ class Experiment:
         
     
     def wavePropagation(self, waveToPropagate, propagationDistance, Energy, magnification):
+        """
+        Propagation of the wave 
+
+        Args:
+            waveToPropagate (2d numpy array): incident wave.
+            propagationDistance (Float): propagation distance in m.
+            Energy (Float): considered eneregy in keV.
+            magnification (Float): magnification on the considered segment from the source.
+
+        Returns:
+            TYPE: DESCRIPTION.
+
+        """
         if propagationDistance==0:
             return waveToPropagate
         
@@ -176,11 +210,39 @@ class Experiment:
     
     
     def refraction(self,intensityRefracted, phi, propagationDistance,Energy, magnification):
-        intensityRefracted2,alphax, alphay=fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,self.studyPixelSize)
-        return intensityRefracted2,alphax, alphay    
+        """
+        Computes the intensity after propagation with ray-tracing
+
+        Args:
+            intensityRefracted (2d numpy array): intensity before propagation.
+            phi (2d numpy array): phase.
+            propagationDistance (Float): propagation distance in m.
+            Energy (Float): considered energy of the spectrum (in keV).
+            magnification (Float): magnification of the considered segment from the source.
+
+        Returns:
+            intensityRefracted2 (2d numpy array): DESCRIPTION.
+            Dx (2d numpy array): displacements along x.
+            Dy (2d numpy array): displacements along y.
+
+        """
+        intensityRefracted2,Dx, Dy=fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,self.studyPixelSize)
+        return intensityRefracted2,Dx, Dy    
     
 #        
     def computeSampleAndReferenceImages(self):
+        """
+        Compute intensity changes on the path of the previously difined experiment 
+        to create all the images of the SBI experiment with Fresnel propagator
+
+
+        Returns:
+            SampleImage (2d numpy array): sample image simulated with sample and membrane.
+            ReferenceImage (2d numpy array): reference image simulated with membrane.
+            PropagImage (2d numpy array): propagation image simulated with only sample.
+            detectedWhite (2d numpy array): white image without membrane and sample.
+
+        """
         
         #INITIALIZING PARAMETERS
         totalFlux=0 
@@ -277,6 +339,19 @@ class Experiment:
         return  SampleImage, ReferenceImage,PropagImage,detectedWhite
         
     def computeSampleAndReferenceImagesRT(self):
+        """
+        Compute intensity changes on the path of the previously difined experiment 
+        to create all the images of the SBI experiment with ray-tracing
+
+        Returns:
+            SampleImage (2d numpy array): sample image simulated with sample and membrane.
+            ReferenceImage (2d numpy array): reference image simulated with membrane.
+            PropagImage (2d numpy array): propagation image simulated with only sample.
+            detectedWhite (2d numpy array): white image without membrane and sample.
+            2d numpy array: real Dx from sample to detector.
+            2d numpy array: real Dy from sample to detector.
+
+        """
         
         #INITIALIZING PARAMETERS
         totalFlux=0 
@@ -375,6 +450,17 @@ class Experiment:
     
         
     def saveAllParameters(self,time0,expDict):
+        """
+        Saves all the experimental and algorithm parameters in a txt file
+
+        Args:
+            time0 (float): time at the beginning of the calculation.
+            expDict (dictionnary): dictionnary containing algorithm parameters.
+
+        Returns:
+            None.
+
+        """
         fileName=expDict['filepath']+self.name+'_'+str(expDict['expID'])+".txt"
         print("file name: ", fileName)
         f=open(fileName,"w+")
@@ -442,15 +528,6 @@ class Experiment:
         
         return
     
-    
-    def createExpDict(self, expParam):
-        expParam['energy'] = self.meanEnergy
-        expParam['pixel'] = self.myDetector.myPixelSize * 1e-6
-        expParam['distOD'] = self.distObjectToDetector
-        expParam['distSO'] = self.distSourceToMembrane+self.distMembraneToObject
-        expParam['sourceSize'] = self.mySource.mySize * 1e-6  # in meters
-        expParam['detectorPSF'] = self.myDetector.myPSF  # in pixel
-    
-        return expParam
+
     
         

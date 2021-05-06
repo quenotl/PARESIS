@@ -11,6 +11,7 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter, median_filter
 from matplotlib import pyplot as plt
 import time
+from numba import jit
 
 class Detector:
     def __init__(self, exp_dict):
@@ -22,10 +23,20 @@ class Detector:
         self.myPSF=0. #en pixel
         self.myEfficiencyLimit=100. #en kev
         self.margins=exp_dict['margin']
-        self.myEnergyLimit=None
+        self.myEnergyLimit=200
         
         
     def defineCorrectValuesDetector(self):
+        """
+        Define detector parameters from the xml file
+
+        Raises:
+            ValueError: detector not found in xml file.
+
+        Returns:
+            None.
+
+        """
         for currentDetector in self.xmldocDetector.documentElement.getElementsByTagName("detector"):
             correctDetector = self.getText(currentDetector.getElementsByTagName("name")[0])
             if correctDetector == self.myName:
@@ -43,6 +54,17 @@ class Detector:
             
             
     def detection(self,incidentWave,effectiveSourceSize):
+        """
+        Adds source and PSF blurrings, resamples to detector pixel size and add shot noise
+
+        Args:
+            incidentWave (2d numpy array): Intensity arriving to the detector.
+            effectiveSourceSize (float): source projected FWHM.
+
+        Returns:
+            detectedImage (2d numpy array): detected image.
+
+        """
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
             incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
@@ -69,11 +91,11 @@ class Detector:
         dimY=int(self.getText(node.getElementsByTagName("dimY")[0]))+self.margins*2
         return np.array([dimX ,dimY])
     
+    @jit(nopython=True)
     def resize(self,imageToResize,sizeX, sizeY):
         Nx, Ny=imageToResize.shape
         if Nx==sizeX and Ny==sizeY:
             return imageToResize
-        
         
         resizedImage=np.ones((sizeX,sizeY))
         sampFactor=int(Nx/sizeX)
