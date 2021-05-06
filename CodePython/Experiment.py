@@ -18,6 +18,7 @@ from numpy.fft import fft2
 from numpy.fft import ifft2
 from matplotlib import pyplot as plt
 from numpy import pi as pi
+from refractionFileNumba import fastRefraction
 
 class Experiment:
     def __init__(self, exp_dict, pointNum):#expName, pointNum, sampling):
@@ -173,73 +174,9 @@ class Experiment:
         
         return waveAfterPropagation
     
-
     
     def refraction(self,intensityRefracted, phi, propagationDistance,Energy, magnification):
-        timeBR=time.time()
-        Lambda=6.626*1e-34*2.998e8/(Energy*1000*1.6e-19)
-        k=2*pi/Lambda
-        Nx,Ny=intensityRefracted.shape
-        if propagationDistance==0:
-            return intensityRefracted, 0, 0
-        
-        intensityRefracted2=np.zeros((intensityRefracted.shape))
-        dphix,dphiy=np.gradient(phi,self.studyPixelSize*1e-6, edge_order=2)
-        Dx=dphix*propagationDistance/k/(self.studyPixelSize*1e-6*magnification)
-        Dy=dphiy*propagationDistance/k/(self.studyPixelSize*1e-6*magnification)        
-        alphax=Dx
-        alphay=Dy
-        
-        for i in range(Nx):
-            for j in range(Ny):
-                Dxtmp=Dx[i,j]
-                Dytmp=Dy[i,j]
-                inew=i
-                jnew=j
-                #Calculating displacement bigger than a pixel
-                if abs(Dxtmp)>1:
-                    inew=i+int(np.floor(Dxtmp))
-                    Dxtmp=Dxtmp-np.floor(Dxtmp)
-                if abs(Dytmp)>1:
-                    jnew=j+int(np.floor(Dytmp))
-                    Dytmp=Dytmp-np.floor(Dytmp)
-                #Calculating sub-pixel displacement
-                if 0<=inew<Nx:
-                    if 0<=jnew<Ny:
-                        intensityRefracted2[inew,jnew]+=intensityRefracted[i,j]*(1-abs(Dxtmp))*(1-abs(Dytmp))
-                        
-                        if inew<Nx-1:
-                            if Dxtmp>=0:
-                                if jnew<Ny-1:
-                                    if Dytmp>=0:
-                                        intensityRefracted2[inew+1,jnew]+=intensityRefracted[i,j]*Dxtmp*(1-Dytmp)
-                                        intensityRefracted2[inew+1,jnew+1]+=intensityRefracted[i,j]*Dxtmp*Dytmp
-                                        intensityRefracted2[inew,jnew+1]+=intensityRefracted[i,j]*(1-Dxtmp)*Dytmp
-                        
-                        if inew>0:
-                            if Dxtmp<0:
-                                if jnew<Ny-1:
-                                    if Dytmp>=0:
-                                        intensityRefracted2[inew-1,jnew]+=intensityRefracted[i,j]*abs(Dxtmp)*(1-Dytmp)
-                                        intensityRefracted2[inew-1,jnew+1]+=intensityRefracted[i,j]*abs(Dxtmp)*Dytmp
-                                        intensityRefracted2[inew,jnew+1]+=intensityRefracted[i,j]*(1-abs(Dxtmp))*Dytmp
-                        
-                        if inew>0:
-                            if Dxtmp<0:
-                                if jnew>0:
-                                    if Dytmp<0:
-                                        intensityRefracted2[inew-1,jnew]+=intensityRefracted[i,j]*abs(Dxtmp)*(1-abs(Dytmp))
-                                        intensityRefracted2[inew-1,jnew-1]+=intensityRefracted[i,j]*Dxtmp*Dytmp
-                                        intensityRefracted2[inew,jnew-1]+=intensityRefracted[i,j]*(1-abs(Dxtmp))*abs(Dytmp)
-                        
-                        if inew<Nx-1:
-                            if Dxtmp>=0:
-                                if jnew>0:
-                                    if Dytmp<0:
-                                        intensityRefracted2[inew+1,jnew]+=intensityRefracted[i,j]*Dxtmp*(1-abs(Dytmp))
-                                        intensityRefracted2[inew+1,jnew-1]+=intensityRefracted[i,j]*Dxtmp*abs(Dytmp)
-                                        intensityRefracted2[inew,jnew-1]+=intensityRefracted[i,j]*(1-Dxtmp)*abs(Dytmp)
-        print("Refraction Time", time.time()-timeBR)
+        intensityRefracted2,alphax, alphay=fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,self.studyPixelSize)
         return intensityRefracted2,alphax, alphay    
     
 #        
