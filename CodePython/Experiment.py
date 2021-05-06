@@ -391,16 +391,19 @@ class Experiment:
         f.write("\nSource type: %s" %self.mySource.myType)
         f.write("\nSource size: %gum" %self.mySource.mySize)
         if self.mySource.myType=="Monochromatic":
-            f.write("\nSource energy: %gkev" %(self.mySource.mySpectrum[0][0]/1000))
+            f.write("\nSource energy: %gkev" %(self.mySource.mySpectrum[0][0]))
         if self.mySource.myType=="Polychromatic":
             f.write("\nSource voltage: %gkVp" %self.mySource.myVoltage)
             f.write("\nSource spectrum energy sampling: %gkeV" %self.mySource.myEnergySampling)
+            f.write("\nMean energy detected in the reference image: %gkeV" %self.meanEnergy)
         
         f.write("\n\nDetector parameters:")
         f.write("\nDetector name: %s"%self.myDetector.myName)
         f.write("\nDetector dimensions:"+str(self.myDetector.myDimensions[0]-expDict['margin'])+"x"+str(self.myDetector.myDimensions[1]-expDict['margin'])+"pix")
         f.write("\nDetector pixels size: %gum" %self.myDetector.myPixelSize)
         f.write("\nDetector PSF: %gpix" %self.myDetector.myPSF)
+        if self.myDetector.myEnergyLimit is not None:
+            f.write("\nDetector max energy detected: %gpix" %self.myDetector.myEnergyLimit)
         
         f.write("\n\nSample informations")
         f.write("\nSample name: %s" %self.mySampleofInterest.myName)
@@ -431,7 +434,7 @@ class Experiment:
         f.write("\nOversampling Factor: %g" %self.sampling)
         f.write("\nStudy dimensions: "+str(self.studyDimensions[0])+"x"+str(self.studyDimensions[1])+"pix")
         f.write("\nStudy pixel size: %gum" %self.studyPixelSize)
-        f.write("\nMean shot count: %g" %self.meanShotCount*self.sampling**2)        
+        f.write("\nMean shot count: %g" %(self.meanShotCount*self.sampling**2))        
         f.write("\nNumber of points: %g" %(self.nbPoints+1))       
         f.write("\nEntire computing time: %gs" %(time.time()-time0))   
         

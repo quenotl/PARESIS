@@ -17,6 +17,7 @@ from matplotlib import pyplot as plt
 from Samples.createSphere import CreateSampleSphere
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import time
+from Samples.HumbleCircle import CreateSampleSphereMultiple
 
 class Sample:
     def __init__(self):
@@ -158,6 +159,15 @@ class AnalyticalSample(Sample):
             if self.myGeometryFunction=="openContrastPhantom":
                 self.myGeometry=openContrastPhantom(self.myGeometryFolder,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp, angle=90)
                 self.myGeometry=np.array(self.myGeometry)
+                return
+            if self.myGeometryFunction=="CreateFourSpheres":
+                self.myGeometry=CreateSampleSphereMultiple(dimX = studyDimensions[0], dimY = studyDimensions[1], pixelSize = studyPixelSize)
+                print("dim X : ", studyDimensions[0], " dim y : ", studyDimensions[1], "Pixel size : ", studyPixelSize)
+                plt.figure()
+                plt.imshow(self.myGeometry[0,:,:])
+                plt.title("Four spheres")
+                plt.colorbar()
+                plt.show()
                 return
         
         if self.myType=="membrane":
