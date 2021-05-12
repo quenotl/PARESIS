@@ -21,7 +21,7 @@ from numpy import pi as pi
 from refractionFileNumba import fastRefraction
 
 class Experiment:
-    def __init__(self, exp_dict, pointNum):#expName, pointNum, sampling):
+    def __init__(self, exp_dict):#expName, pointNum, sampling):
         """Experiment class constructor.
             
         Args:
@@ -46,7 +46,6 @@ class Experiment:
 
         self.meanShotCount=0
         self.meanEnergy=0
-        self.nbPoints=pointNum
         self.Dxreal=[]
         self.Dyreal=[]
         self.imageSampleBeforeDetection=[]
@@ -81,25 +80,23 @@ class Experiment:
 
         self.myMembrane.getDeltaBeta(self.mySource.mySpectrum)
         self.myMembrane.membranePixelSize=self.studyPixelSize*self.distSourceToMembrane/(self.distSourceToMembrane+self.distMembraneToObject)
-        self.myMembrane.getMyGeometry(self.studyDimensions,self.myMembrane.membranePixelSize,self.sampling, self.nbPoints)
         
         
-        if self.nbPoints==0:
-            print('Current experiment:',self.name)
-            print("\nCurrent detector: ",self.myDetector.myName)
-            print("  Detectors dimensions ",self.myDetector.myDimensions)
-            print("Current source: ",self.mySource.myName)
-            print("  Source type:",self.mySource.myType)
-            print("  Source spectrum:",self.mySource.mySpectrum,"eV")
-            print("Current sample:", self.mySampleofInterest.myName)
-            print("  My sample type:", self.mySampleofInterest.myType)
-            print("Current membrane:", self.myMembrane.myName)
-            print("  My membrane type:", self.myMembrane.myType)
-            print("Magnification :", self.magnification)
-    
-            print("Study dimensions:", self.studyDimensions)
-            print("Study PixelSize =",self.studyPixelSize,"um")
-            print("Over-sampling factor: ",self.sampling)
+        print('Current experiment:',self.name)
+        print("\nCurrent detector: ",self.myDetector.myName)
+        print("  Detectors dimensions ",self.myDetector.myDimensions)
+        print("Current source: ",self.mySource.myName)
+        print("  Source type:",self.mySource.myType)
+        print("  Source spectrum:",self.mySource.mySpectrum,"eV")
+        print("Current sample:", self.mySampleofInterest.myName)
+        print("  My sample type:", self.mySampleofInterest.myType)
+        print("Current membrane:", self.myMembrane.myName)
+        print("  My membrane type:", self.myMembrane.myType)
+        print("Magnification :", self.magnification)
+
+        print("Study dimensions:", self.studyDimensions)
+        print("Study PixelSize =",self.studyPixelSize,"um")
+        print("Over-sampling factor: ",self.sampling)
             
         
     def defineCorrectValues(self, exp_dict):
@@ -230,7 +227,7 @@ class Experiment:
         return intensityRefracted2,Dx, Dy    
     
 #        
-    def computeSampleAndReferenceImages(self):
+    def computeSampleAndReferenceImages(self, pointNum):
         """
         Compute intensity changes on the path of the previously difined experiment 
         to create all the images of the SBI experiment with Fresnel propagator
@@ -267,7 +264,7 @@ class Experiment:
         i=0
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
-            if currentEnergy<=self.myDetector.myEnergyLimit:
+            if currentEnergy<=self.myDetector.myEnergyLimit and flux/totalFlux>0.01:
                 #Taking into account source window and air attenuation of intensity
                 incidentIntensity=incidentWave0**2
                 incidentIntensity=incidentIntensity*flux/totalFlux
@@ -303,7 +300,7 @@ class Experiment:
                 sumIntensity+=np.mean(intensityReferenceBeforeDetection)
                 self.meanEnergy+=currentEnergy*np.mean(intensityReferenceBeforeDetection)
                 
-                if self.nbPoints==0: #We only do it for the first point
+                if pointNum==0: #We only do it for the first point
                     print("Setting wave through sample for propag and abs image")
                     self.wavePropagAfterSample=self.mySampleofInterest.setWave(incidentWave,currentEnergy)
                     self.wavePropagBeforeDetection=self.wavePropagation(self.wavePropagAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
@@ -330,7 +327,7 @@ class Experiment:
         SampleImage=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
         print("Detection reference image")
         ReferenceImage=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
-        if self.nbPoints==0:
+        if pointNum==0:
             self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
             print("Detection propagation image")
             PropagImage=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
@@ -338,7 +335,7 @@ class Experiment:
 
         return  SampleImage, ReferenceImage,PropagImage,detectedWhite
         
-    def computeSampleAndReferenceImagesRT(self):
+    def computeSampleAndReferenceImagesRT(self, pointNum):
         """
         Compute intensity changes on the path of the previously difined experiment 
         to create all the images of the SBI experiment with ray-tracing
@@ -376,7 +373,7 @@ class Experiment:
             
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
-            if currentEnergy<=self.myDetector.myEnergyLimit:
+            if currentEnergy<=self.myDetector.myEnergyLimit and flux/totalFlux>0.01:
                 incidentIntensity=incidentIntensity0*flux/totalFlux
                 incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
                 
@@ -409,7 +406,7 @@ class Experiment:
                 sumIntensity+=np.mean(intensityReferenceBeforeDetection)
                 self.meanEnergy+=currentEnergy*np.mean(intensityReferenceBeforeDetection)
                 
-                if self.nbPoints==0: #We only do it for the first point
+                if pointNum==0: #We only do it for the first point
                     print("Setting wave through sample for propag and abs image")
                     self.IntensityPropagAfterSample,phiWavePropagAfterSample=self.mySampleofInterest.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
                     self.imagePropagAfterRefraction, self.Dxreal, self.Dyreal=self.refraction(abs(self.IntensityPropagAfterSample),phiWavePropagAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
@@ -436,7 +433,7 @@ class Experiment:
         print("Detection reference image")
         ReferenceImage=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
         
-        if self.nbPoints==0:
+        if pointNum==0:
             self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
             print("Detection propagation image")
             PropagImage=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
@@ -464,7 +461,7 @@ class Experiment:
         print("file name: ", fileName)
         f=open(fileName,"w+")
 
-        f.write("EXPERIMENT PARAMETERS - Fresnel - "+str(expDict['expID']))
+        f.write("EXPERIMENT PARAMETERS - "+expDict['simulation_type']+" - "+str(expDict['expID']))
 
         f.write("\n\nDistances:")
         f.write("\nDistance source to membrane: %gm" %self.distSourceToMembrane)
@@ -520,7 +517,7 @@ class Experiment:
         f.write("\nStudy dimensions: "+str(self.studyDimensions[0])+"x"+str(self.studyDimensions[1])+"pix")
         f.write("\nStudy pixel size: %gum" %self.studyPixelSize)
         f.write("\nMean shot count: %g" %(self.meanShotCount*self.sampling**2))        
-        f.write("\nNumber of points: %g" %(self.nbPoints+1))       
+        f.write("\nNumber of points: %g" %(expDict['nbExpPoints']))    
         f.write("\nEntire computing time: %gs" %(time.time()-time0))   
         
         f.close()

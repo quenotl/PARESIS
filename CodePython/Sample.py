@@ -11,7 +11,7 @@ from xml.dom import minidom
 import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
-# from Samples.getPunchedMembrane import getMembranePunched
+from Samples.getPunchedMembrane import getMembranePunched
 import xlrd
 from matplotlib import pyplot as plt
 from Samples.createSphere import CreateSampleSphere
@@ -57,6 +57,7 @@ class Sample:
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
                     self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
                 if self.myGeometryFunction=="getMembranePunched":
+                    self.myMembraneFile=self.getText(currentSample.getElementsByTagName("myMembraneFile")[0])
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
                     self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
                     self.myPlateThickness=int(self.getText(currentSample.getElementsByTagName("myPlateThickness")[0]))
