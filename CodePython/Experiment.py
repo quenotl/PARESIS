@@ -353,7 +353,25 @@ class Experiment:
         #INITIALIZING PARAMETERS
         totalFlux=0 
         sumIntensity=0
+        ibin=0
+        ien=0
+        if pointNum==0:
+            if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThersholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThersholds):
+                raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
+            # self.myDetector.myBinsThersholds.insert(0,self.mySource.mySpectrum[0][0])
+            self.myDetector.myBinsThersholds.append(self.mySource.mySpectrum[-1][0])
+        nbins=len(self.myDetector.myBinsThersholds)
+        binsThresholds=self.myDetector.myBinsThersholds
+        SampleImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
+        ReferenceImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
+        PropagImage=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
+        detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         
+        
+        #Defining total flux for normalizing spectrum
+        for currentEnergy, flux in self.mySource.mySpectrum:
+            totalFlux+=flux
+            
         #INITIALIZING IMAGES
         incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
         incidentPhi=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
@@ -361,85 +379,77 @@ class Experiment:
         self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
         self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
         white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        
-        SampleImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        ReferenceImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        PropagImage=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        detectedWhite=np.zeros((self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-
-        #Defining total flux for normalizing spectrum
-        for currentEnergy, flux in self.mySource.mySpectrum:
-            totalFlux+=flux
             
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
-            if currentEnergy<=self.myDetector.myEnergyLimit and flux/totalFlux>0.01:
-                incidentIntensity=incidentIntensity0*flux/totalFlux
-                incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
-                
-                print("\nCurrent Energy:", currentEnergy)
-                
-                #Passage of the incident wave through the membrane
-                print("Setting wave through membrane")
-                self.IntensitySampleAfterMembrane, phiWaveSampleAfterMembrane=self.myMembrane.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
-                
-                #Propagation from membrane to object and passage through the object
-                self.IntensitySampleBeforeSample,_,_=self.refraction(abs(self.IntensitySampleAfterMembrane),phiWaveSampleAfterMembrane,self.distMembraneToObject,currentEnergy,self.magnification)
-    
-                print("Setting wave through sample for sample image")            
-                self.IntensitySampleAfterSample,phiWaveSampleAfterSample=self.mySampleofInterest.setWaveRT(self.IntensitySampleBeforeSample,phiWaveSampleAfterMembrane,currentEnergy)
-                
-                #Propagation to detector
-                print("Propagating waves to detector plane")
-                self.imageSampleAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleAfterSample),phiWaveSampleAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
-                self.imageReferenceAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleBeforeSample),phiWaveSampleAfterMembrane,self.distObjectToDetector,currentEnergy,self.magnification)
-                intensitySampleBeforeDetection=self.imageSampleAfterRefraction
-                intensityReferenceBeforeDetection=self.imageReferenceAfterRefraction
-                #Plaque attenuation
+            incidentIntensity=incidentIntensity0*flux/totalFlux
+            incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
+            
+            print("\nCurrent Energy: %gkev" %currentEnergy)
+            
+            #Passage of the incident wave through the membrane
+            print("Setting wave through membrane")
+            self.IntensitySampleAfterMembrane, phiWaveSampleAfterMembrane=self.myMembrane.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
+            
+            #Propagation from membrane to object and passage through the object
+            self.IntensitySampleBeforeSample,_,_=self.refraction(abs(self.IntensitySampleAfterMembrane),phiWaveSampleAfterMembrane,self.distMembraneToObject,currentEnergy,self.magnification)
+
+            print("Setting wave through sample for sample image")            
+            self.IntensitySampleAfterSample,phiWaveSampleAfterSample=self.mySampleofInterest.setWaveRT(self.IntensitySampleBeforeSample,phiWaveSampleAfterMembrane,currentEnergy)
+            
+            #Propagation to detector
+            print("Propagating waves to detector plane")
+            self.imageSampleAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleAfterSample),phiWaveSampleAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
+            self.imageReferenceAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleBeforeSample),phiWaveSampleAfterMembrane,self.distObjectToDetector,currentEnergy,self.magnification)
+            intensitySampleBeforeDetection=self.imageSampleAfterRefraction
+            intensityReferenceBeforeDetection=self.imageReferenceAfterRefraction
+            #Plaque attenuation
+            if self.myPlaque is not None:
+                intensitySampleBeforeDetection,_=self.myPlaque.setWaveRT(intensitySampleBeforeDetection,1, currentEnergy)
+                intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
+            #Combining intensities for several energies
+            self.imageSampleBeforeDetection+=intensitySampleBeforeDetection
+            self.imageReferenceBeforeDetection+=intensityReferenceBeforeDetection
+            
+            sumIntensity+=np.mean(intensityReferenceBeforeDetection)
+            self.meanEnergy+=currentEnergy*np.mean(intensityReferenceBeforeDetection)
+            
+            if pointNum==0: #We only do it for the first point
+                print("Setting wave through sample for propag and abs image")
+                self.IntensityPropagAfterSample,phiWavePropagAfterSample=self.mySampleofInterest.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
+                self.imagePropagAfterRefraction, self.Dxreal, self.Dyreal=self.refraction(abs(self.IntensityPropagAfterSample),phiWavePropagAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
+                intensityPropagBeforeDetection=self.imagePropagAfterRefraction
                 if self.myPlaque is not None:
-                    intensitySampleBeforeDetection,_=self.myPlaque.setWaveRT(intensitySampleBeforeDetection,1, currentEnergy)
-                    intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
-                #Combining intensities for several energies
-                self.imageSampleBeforeDetection+=intensitySampleBeforeDetection
-                self.imageReferenceBeforeDetection+=intensityReferenceBeforeDetection
+                    intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
+                    incidentIntensity,_=self.myPlaque.setWaveRT(incidentIntensity,1, currentEnergy)
+                white+=incidentIntensity
+                self.imagePropagBeforeDetection+=intensityPropagBeforeDetection
+
+
+            if currentEnergy>self.myDetector.myBinsThersholds[ibin]-self.mySource.myEnergySampling/2:
+            
+                effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
+        
+                #DETECTION IMAGES FOR ENERGY BIN
+                print("Detection sample image")
+                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
+                print("Detection reference image")
+                ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
+                if pointNum==0:
+                    self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
+                    print("Detection propagation image")
+                    PropagImage[ibin]=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
+                detectedWhite[ibin]=self.myDetector.detection(white,effectiveSourceSize)
                 
-                sumIntensity+=np.mean(intensityReferenceBeforeDetection)
-                self.meanEnergy+=currentEnergy*np.mean(intensityReferenceBeforeDetection)
+                self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
                 
-                if pointNum==0: #We only do it for the first point
-                    print("Setting wave through sample for propag and abs image")
-                    self.IntensityPropagAfterSample,phiWavePropagAfterSample=self.mySampleofInterest.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
-                    self.imagePropagAfterRefraction, self.Dxreal, self.Dyreal=self.refraction(abs(self.IntensityPropagAfterSample),phiWavePropagAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
-                    intensityPropagBeforeDetection=self.imagePropagAfterRefraction
-                    if self.myPlaque is not None:
-                        intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
-                        incidentIntensity,_=self.myPlaque.setWaveRT(incidentIntensity,1, currentEnergy)
-                    white+=incidentIntensity
-                    self.imagePropagBeforeDetection+=intensityPropagBeforeDetection
-
-
-
+                ibin+=1
+                
         self.meanEnergy=self.meanEnergy/sumIntensity
-                
         print("MeanEnergy", self.meanEnergy)
-        
-        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
-        self.imageSampleBeforeDetection=self.imageSampleBeforeDetection
-        self.imageReferenceBeforeDetection=self.imageReferenceBeforeDetection
-
-        #DETECTION IMAGES FOR ENERGY BIN
-        print("Detection sample image")
-        SampleImage=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
-        print("Detection reference image")
-        ReferenceImage=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
-        
-        if pointNum==0:
-            self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
-            print("Detection propagation image")
-            PropagImage=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
-                
-                
-        detectedWhite=self.myDetector.detection(white,effectiveSourceSize)
                 
         return  SampleImage, ReferenceImage,PropagImage,detectedWhite, self.Dxreal, self.Dyreal
 
@@ -485,7 +495,9 @@ class Experiment:
         f.write("\nDetector pixels size: %gum" %self.myDetector.myPixelSize)
         f.write("\nDetector PSF: %gpix" %self.myDetector.myPSF)
         if self.myDetector.myEnergyLimit is not None:
-            f.write("\nDetector max energy detected: %gpix" %self.myDetector.myEnergyLimit)
+            f.write("\nDetector max energy detected: %gkeV" %self.myDetector.myEnergyLimit)
+        if self.myDetector.myBinsThersholds is not None:
+            f.write(f'\nDetector bins thresholds: {self.myDetector.myBinsThersholds}keV')
         
         f.write("\n\nSample informations")
         f.write("\nSample name: %s" %self.mySampleofInterest.myName)

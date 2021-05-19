@@ -21,11 +21,11 @@
         <name>Theo1</name>
         <myType>Polychromatic</myType>
         <mySize unit="um">20</mySize>
-        <sourceVoltage unit="kVp">40</sourceVoltage>
-        <exitingWindowMaterial>Be</exitingWindowMaterial>
-        <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>
-        <myEnergySampling unit="keV">2</myEnergySampling>
-        <myTargetMaterial>Mo</myTargetMaterial>
+        <sourceVoltage unit="kVp">55</sourceVoltage>
+        <exitingWindowMaterial>Al</exitingWindowMaterial>
+        <exitingWindowThickness unit="mm">2.5</exitingWindowThickness>
+        <myEnergySampling unit="keV">0.5</myEnergySampling>
+        <myTargetMaterial>W</myTargetMaterial>
     </source>
     
 </listSources>

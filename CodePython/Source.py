@@ -26,6 +26,7 @@ class Source:
         self.myType=None
         self.exitingWindowMaterial=None
         self.myTargetMaterial='W'
+        self.myEnergySampling=1
         
     def defineCorrectValuesSource(self):
         """
@@ -96,6 +97,7 @@ class Source:
             Nen=len(spectrum[0])
             Nbin=int(np.ceil(Nen/self.myEnergySampling/2))
             n=0
+            totWeight=0
             for i in range(Nbin-1):
                 currBin=0
                 weightBin=0
@@ -108,6 +110,7 @@ class Source:
                 self.mySpectrum.append((energyBin/weightBin,weightBin))
                 energyplot.append(energyBin/weightBin)
                 weightplot.append(weightBin)
+                totWeight+=weightBin
                 
             currBin=0
             weightBin=0
@@ -119,6 +122,14 @@ class Source:
             self.mySpectrum.append((energyBin/weightBin,weightBin))
             energyplot.append(energyBin/weightBin)
             weightplot.append(weightBin)
+            
+            
+            k=0
+            while self.mySpectrum[0][1]/totWeight<0.001:
+                self.mySpectrum.pop(0)
+                energyplot.pop(0)
+                weightplot.pop(0)
+                k+=1
                 
             plt.figure()
             plt.plot(energyplot,weightplot)

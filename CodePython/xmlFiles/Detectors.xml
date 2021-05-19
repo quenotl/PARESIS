@@ -37,7 +37,7 @@
         </myDimensions>
         <myPixelSize unit="um">75</myPixelSize>
         <myPSF unit="pixel">0</myPSF>
-        <myEnergyLimit unit="keV">30</myEnergyLimit>
+        <myBinsThersholds>20,30,40</myBinsThersholds>
     </detector>
     
 </listDetectors>

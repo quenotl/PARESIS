@@ -20,7 +20,7 @@
         <name>Mask_CuSn_From_edf</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn_dim100x900_oversamp4_margin10_radius10</myMembraneFile>
+        <myMembraneFile>Samples/Membranes/CuSn_dim100x900_oversamp4_margin10_radius20</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
     </sample>
@@ -43,8 +43,17 @@
         <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPlateThickness unit="um">400</myPlateThickness>
         <myMaterials>Cu</myMaterials>
-        <myMeanSphereRadius>6</myMeanSphereRadius>
-        <myNbOfLayers>1</myNbOfLayers>
+        <myMeanSphereRadius>10</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_Punched_From_edf</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/Punched2_dim100x900_oversamp4_margin10_radius20</myMembraneFile>
+        <myPMMAThickness unit="um">0</myPMMAThickness>
+        <myMaterials>Cu,PMMA</myMaterials>
     </sample>
     
     <sample>

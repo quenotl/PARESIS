@@ -24,6 +24,7 @@ class Detector:
         self.myEfficiencyLimit=100. #en kev
         self.margins=exp_dict['margin']
         self.myEnergyLimit=200
+        self.myBinsThersholds=[]
         
         
     def defineCorrectValuesDetector(self):
@@ -47,7 +48,10 @@ class Detector:
                 for node in currentDetector.childNodes:
                     if node.localName=="myEnergyLimit":
                         self.myEnergyLimit=float(self.getText(currentDetector.getElementsByTagName("myEnergyLimit")[0]))
-            
+                    if node.localName=="myBinsThersholds":
+                        myBinsThersholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThersholds")[0])
+                        myBinsThersholdsTmp=list(myBinsThersholdsTmp.split(","))
+                        self.myBinsThersholds=[float(ele) for ele in myBinsThersholdsTmp]
                 return
             
         raise ValueError("detector not found in xml file")
