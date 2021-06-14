@@ -71,7 +71,7 @@
         <distSourceToMembrane unit="m">0.58</distSourceToMembrane>
         <distMembraneToObject unit="m">0.02</distMembraneToObject>
         <distObjectToDetector unit="m">0.6</distObjectToDetector>
-        <membraneName>Mask_CuSn_From_edf</membraneName>
+        <membraneName>Mask_CuSn_From_txt</membraneName>
         <sampleName>ContrastPhantomTheo</sampleName>
         <sampleType>AnalyticalSample</sampleType>
         <detectorName>SPC</detectorName>

@@ -32,11 +32,11 @@ if __name__ == "__main__":
     # Output filepath to store the result images
     exp_dict['filepath']='../Results/TheoreticalStudy/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=4 # MUST BE AN INTEGER
+    exp_dict['sampleSampling']=20 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=1 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
-    exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
+    exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
@@ -54,8 +54,7 @@ if __name__ == "__main__":
     
     for pointNum in range(exp_dict['nbExpPoints']):
         experiment.myMembrane.myGeometry=[]
-        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum)
-
+        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
         print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
         print("\n\n*************************")
         print("Calculations point",pointNum)

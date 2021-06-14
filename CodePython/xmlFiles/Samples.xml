@@ -48,6 +48,24 @@
     </sample>
     
     <sample>
+        <name>Mask_regular_mesh</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneMesh</myGeometryFunction>
+        <myMaterials>Cu</myMaterials>
+        <myMeanSphereRadius>10</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_regular_pyramids</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembranePyramids</myGeometryFunction>
+        <myMaterials>Cu</myMaterials>
+        <myMeanSphereRadius>10</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
         <name>Mask_Punched_From_edf</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneFromFile</myGeometryFunction>

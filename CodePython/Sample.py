@@ -12,6 +12,8 @@ import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
 from Samples.getPunchedMembrane import getMembranePunched
+from Samples.getMembraneMesh import getMembraneMesh
+from Samples.getMembranePyramids import getMembranePyramids
 import xlrd
 from matplotlib import pyplot as plt
 from Samples.createSphere import CreateSampleSphere
@@ -157,7 +159,7 @@ class AnalyticalSample(Sample):
         self.delta=[]
         self.beta=[]        
         
-    def getMyGeometry(self,studyDimensions, studyPixelSize,oversamp, pointNum=0):
+    def getMyGeometry(self,studyDimensions, studyPixelSize,oversamp, pointNum=0, number_of_positions=0):
         """
         Sets sample geometry maps for each of their materials geometry[material, x, y]
 
@@ -201,7 +203,7 @@ class AnalyticalSample(Sample):
                 plt.show()
                 return       
             if self.myGeometryFunction=="generateContrastPhantom":
-                self.myGeometry=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=90)
+                self.myGeometry=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=30)
                 self.myGeometry=np.array(self.myGeometry)
                 return
             if self.myGeometryFunction=="openContrastPhantom":
@@ -232,6 +234,12 @@ class AnalyticalSample(Sample):
             if self.myGeometryFunction=="getMembranePunched":
                 self.myGeometry.append(getMembranePunched(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
                 self.myGeometry=np.array(self.myGeometry)
+                return
+            if self.myGeometryFunction=="getMembraneMesh":
+                self.myGeometry=getMembraneMesh(self,studyDimensions[0], studyDimensions[1],studyPixelSize,oversamp, pointNum, number_of_positions) 
+                return
+            if self.myGeometryFunction=="getMembranePyramids":
+                self.myGeometry=getMembranePyramids(self,studyDimensions[0], studyDimensions[1],studyPixelSize,oversamp, pointNum, number_of_positions) 
                 return
         
         if self.myGeometryFunction=="get_my_thickness":

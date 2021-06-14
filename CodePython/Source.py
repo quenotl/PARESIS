@@ -147,8 +147,8 @@ class Source:
     
     
 if __name__ == "__main__":
-    s = sp.Spek(kvp=40,th=12, targ='Mo')
-    s.filter('Al', 0.1)
+    s = sp.Spek(kvp=40,th=12, targ='W')
+    s.filter('Be', 0.2)
     spectrum=s.get_spectrum()
     
     sumEn=0
