@@ -82,9 +82,13 @@ class Experiment:
         self.myMembrane.getDeltaBeta(self.mySource.mySpectrum)
         self.myMembrane.membranePixelSize=self.studyPixelSize*self.distSourceToMembrane/(self.distSourceToMembrane+self.distMembraneToObject)
         
+        if self.myDetector.myScintillatorMaterial is not None:
+            self.myDetector.getBeta(self.mySource.mySpectrum)
         
         print('Current experiment:',self.name)
         print("\nCurrent detector: ",self.myDetector.myName)
+        if self.myDetector.myScintillatorMaterial is not None:
+            print(f"  Scintillator {self.myDetector.myScintillatorMaterial} of {self.myDetector.myScintillatorThickness}um")
         print("  Detectors dimensions ",self.myDetector.myDimensions)
         print("Current source: ",self.mySource.myName)
         print("  Source type:",self.mySource.myType)
@@ -272,12 +276,21 @@ class Experiment:
         i=0
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
+            print("\nCurrent Energy:", currentEnergy)
             #Taking into account source window and air attenuation of intensity
             incidentIntensity=incidentIntensity0*flux/totalFlux
             incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
-            incidentWave=np.sqrt(incidentIntensity)
             
-            print("\nCurrent Energy:", currentEnergy)
+            #Take into account the detector scintillator efficiency if given in xml file
+            if self.myDetector.myScintillatorMaterial is not None:
+                for energyData, betaEn in self.myDetector.beta:
+                    if energyData==currentEnergy:
+                        beta=betaEn
+                k=getk(currentEnergy*1000)
+                detectedSpectrum=1-np.exp(-2*k*self.myDetector.myScintillatorThickness*1e-6*beta)
+                print("Scintillator efficiency for current energy:", detectedSpectrum)
+                incidentIntensity=incidentIntensity*detectedSpectrum
+            incidentWave=np.sqrt(incidentIntensity)
             
             #Passage of the incident wave through the membrane
             print("Setting wave through membrane")
@@ -397,11 +410,21 @@ class Experiment:
             
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:
+            print("\nCurrent Energy: %gkev" %currentEnergy)
+            
             incidentIntensity=incidentIntensity0*flux/totalFlux
             incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
-            print("\nCurrent Energy: %gkev" %currentEnergy)
-            
+            #Take into account the detector scintillator efficiency if given in xml file
+            if self.myDetector.myScintillatorMaterial is not None:
+                for energyData, betaEn in self.myDetector.beta:
+                    if energyData==currentEnergy:
+                        beta=betaEn
+                k=getk(currentEnergy*1000)
+                detectedSpectrum=1-np.exp(-2*k*self.myDetector.myScintillatorThickness*1e-6*beta)
+                print("Scintillator efficiency for current energy:", detectedSpectrum)
+                incidentIntensity=incidentIntensity*detectedSpectrum
+                
             #Passage of the incident wave through the membrane
             print("Setting wave through membrane")
             self.IntensitySampleAfterMembrane, phiWaveSampleAfterMembrane=self.myMembrane.setWaveRT(incidentIntensity,incidentPhi,currentEnergy)
@@ -513,6 +536,8 @@ class Experiment:
             f.write("\nDetector max energy detected: %gkeV" %self.myDetector.myEnergyLimit)
         if self.myDetector.myBinsThersholds is not None:
             f.write(f'\nDetector bins thresholds: {self.myDetector.myBinsThersholds}keV')
+        if self.myDetector.myScintillatorMaterial is not None:
+            f.write(f"  Scintillator {self.myDetector.myScintillatorMaterial} of {self.myDetector.myScintillatorThickness}um")
         
         f.write("\n\nSample informations")
         f.write("\nSample name: %s" %self.mySampleofInterest.myName)

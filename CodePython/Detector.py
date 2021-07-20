@@ -12,6 +12,7 @@ from scipy.ndimage.filters import gaussian_filter, median_filter
 from matplotlib import pyplot as plt
 import time
 from numba import jit
+import xlrd
 
 class Detector:
     def __init__(self, exp_dict):
@@ -23,8 +24,11 @@ class Detector:
         self.myPSF=0. #en pixel
         self.myEfficiencyLimit=100. #en kev
         self.margins=exp_dict['margin']
-        self.myEnergyLimit=200
-        self.myBinsThersholds=[]
+        self.myEnergyLimit=200 #No longer useful?
+        self.myBinsThersholds=[] #keX
+        self.myScintillatorMaterial=None
+        self.myScintillatorThickness=0. #um
+        self.beta=[]
         
         
     def defineCorrectValuesDetector(self):
@@ -52,6 +56,9 @@ class Detector:
                         myBinsThersholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThersholds")[0])
                         myBinsThersholdsTmp=list(myBinsThersholdsTmp.split(","))
                         self.myBinsThersholds=[float(ele) for ele in myBinsThersholdsTmp]
+                    if node.localName=="myScintillatorMaterial":
+                        self.myScintillatorMaterial=(self.getText(currentDetector.getElementsByTagName("myScintillatorMaterial")[0]))
+                        self.myScintillatorThickness=float(self.getText(currentDetector.getElementsByTagName("myScintillatorThickness")[0]))
                 return
             
         raise ValueError("detector not found in xml file")
@@ -94,6 +101,38 @@ class Detector:
         dimX=int(self.getText(node.getElementsByTagName("dimX")[0]))+self.margins*2
         dimY=int(self.getText(node.getElementsByTagName("dimY")[0]))+self.margins*2
         return np.array([dimX ,dimY])
+    
+    
+    def getBeta(self, sourceSpectrum):
+        print("Materials :", self.myScintillatorMaterial)
+        pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
+        for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
+            for col in range(sh.ncols):
+                row=0
+                myCell = sh.cell(row, col)
+#                    print("\n\n Sample materials : ",self.myMaterials[imat])
+                if myCell.value == self.myScintillatorMaterial:
+                    row=row+3
+                    for energy,_ in sourceSpectrum:
+                        currentCellValue=sh.cell(row,col).value
+                        if energy*1000<currentCellValue:
+                            self.beta.append((energy,1))
+                            print("No delta beta values under",currentCellValue, "eV")
+                            continue
+                        nextCellValue=sh.cell(row+1,col).value
+                        while nextCellValue<energy*1e3: #find in which interval the energy is in the delta beta tables
+                            row+=1
+                            currentCellValue=sh.cell(row,col).value
+                            nextCellValue=sh.cell(row+1,col).value
+                        #Linear interpollation between those values
+                        step=nextCellValue-currentCellValue
+                        currentCellBeta=float(sh.cell(row,col+2).value)
+                        nextCellBeta=float(sh.cell(row+1,col+2).value)
+                        betaInterp=abs(nextCellValue-energy*1e3)/step*currentCellBeta+abs(currentCellValue-energy*1e3)/step*nextCellBeta
+                        self.beta.append((energy,betaInterp))
+                        
+                    return
+            raise ValueError("The scintillator material has not been found in delta beta tables")
     
 @jit(nopython=True)
 def resize(imageToResize,sizeX, sizeY):

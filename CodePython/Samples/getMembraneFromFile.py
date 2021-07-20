@@ -123,7 +123,7 @@ if __name__ == "__main__":
     class Membrane():
         def __init__(self):
             self.myMembraneFile='Membranes/CuSn.txt'
-            self.myMeanSphereRadius=10
+            self.myMeanSphereRadius=20
             self.myNbOfLayers=2
             return
     
