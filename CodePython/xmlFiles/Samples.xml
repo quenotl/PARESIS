@@ -1,4 +1,51 @@
 <listSamples>
+    
+    <!--MEMBRANES-->
+
+    <sample>
+        <name>Mask_CuSn_From_txt</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>CuSn,PMMA</myMaterials>
+        <myMeanSphereRadius>15</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_CuSn_From_txt_config1</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>CuSn,PMMA</myMaterials>
+        <myMeanSphereRadius>5</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_CuSn_From_txt_config3</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>CuSn,PMMA</myMaterials>
+        <myMeanSphereRadius>25</myMeanSphereRadius>
+        <myNbOfLayers>2</myNbOfLayers>
+    </sample>
+    
+    <sample>
+        <name>Mask_CuSn_From_edf</name>
+        <myType>membrane</myType>
+        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
+        <myMembraneFile>Samples/Membranes/CuSn_dim500x1500_oversamp2_margin10_radius30</myMembraneFile>
+        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myMaterials>Fe,PMMA</myMaterials>
+    </sample>
+    
+    <!--SAMPLES OF INTEREST-->
+    
     <sample>
         <name>filNylon</name>
         <myType>sample_of_interest</myType>
@@ -17,112 +64,28 @@
     </sample>
     
     <sample>
-        <name>Mask_CuSn_From_edf</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn_dim100x900_oversamp4_margin10_radius20</myMembraneFile>
-        <myPMMAThickness unit="um">4000</myPMMAThickness>
-        <myMaterials>CuSn,PMMA</myMaterials>
-    </sample>
-    
-    <sample>
-        <name>Mask_CuSn_From_txt</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
-        <myPMMAThickness unit="um">4000</myPMMAThickness>
-        <myMaterials>CuSn,PMMA</myMaterials>
-        <myMeanSphereRadius>30</myMeanSphereRadius>
-        <myNbOfLayers>2</myNbOfLayers>
-    </sample>
-    
-    <sample>
-        <name>Mask_Punched_From_txt</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembranePunched</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
-        <myPlateThickness unit="um">400</myPlateThickness>
-        <myMaterials>Cu</myMaterials>
-        <myMeanSphereRadius>10</myMeanSphereRadius>
-        <myNbOfLayers>2</myNbOfLayers>
-    </sample>
-    
-    <sample>
-        <name>Mask_regular_mesh</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneMesh</myGeometryFunction>
-        <myMaterials>Cu</myMaterials>
-        <myMeanSphereRadius>10</myMeanSphereRadius>
-        <myNbOfLayers>2</myNbOfLayers>
-    </sample>
-    
-    <sample>
-        <name>Mask_regular_pyramids</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembranePyramids</myGeometryFunction>
-        <myMaterials>Cu</myMaterials>
-        <myMeanSphereRadius>10</myMeanSphereRadius>
-        <myNbOfLayers>2</myNbOfLayers>
-    </sample>
-    
-    <sample>
-        <name>Mask_Punched_From_edf</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/Punched2_dim100x900_oversamp4_margin10_radius20</myMembraneFile>
-        <myPMMAThickness unit="um">0</myPMMAThickness>
-        <myMaterials>Cu,PMMA</myMaterials>
-    </sample>
-    
-    <sample>
-        <name>ContrastPhantomC</name>
+        <name>spheres_in_tube</name>
         <myType>sample_of_interest</myType>
-        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
-        <myGeometryFolder>ContrastPhantom/CP_Simap_100p0overSampx4_angle90/</myGeometryFolder>
-        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
+        <myGeometryFunction>CreateSampleSpheresInTube</myGeometryFunction>
+        <myMaterials>Muscle,Cartilage,Solid Water</myMaterials>
     </sample>
     
     <sample>
-        <name>ContrastPhantomThéo</name>
-        <myType>sample_of_interest</myType>
-        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
-        <myGeometryFolder>ContrastPhantom/CP_pixsize37um_480x3680_angle50deg/</myGeometryFolder>
-        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
-    </sample>
-    
-    <sample>
-        <name>ContrastPhantomTheo</name>
+        <name>ContrastPhantomID17</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>generateContrastPhantom</myGeometryFunction>
         <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
     </sample>
     
     <sample>
-        <name>RandomSpheresSegmentedFromFileFe90ID17_x10</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/membraneFe90_21p948um_overSampx10.edf</myMembraneFile>
-        <myMaterials>Fe,PMMA</myMaterials>
-        <myPMMAThickness unit="um">2000</myPMMAThickness>
+        <name>ContrastPhantomSpectralClinic</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
+        <myGeometryFolder>ContrastPhantom/CP_pixsize25um_1040x3040_angle50deg/</myGeometryFolder>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
     </sample>
     
-    <sample>
-        <name>RandomSpheresSegmentedFromFileFe90Simap</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/membraneFe90_Simap_21p4um_overSampx4.edf</myMembraneFile>
-        <myMaterials>Fe,PMMA</myMaterials>
-        <myPMMAThickness unit="um">2000</myPMMAThickness>
-    </sample>
-    
-    <sample>
-        <name>RandomSpheresSegmentedFromFileFe90</name>
-        <myType>membrane</myType>
-        <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/membraneFe90_50p0um_overSampx4.edf</myMembraneFile>
-        <myPMMAThickness unit="um">4000</myPMMAThickness>
-        <myMaterials>Fe,PMMA</myMaterials>
-    </sample>
+    <!--ADDITIONNAL ELEMENTS-->
     
     <sample>
         <name>C_plaque</name>

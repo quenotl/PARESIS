@@ -1,32 +1,32 @@
 <listDetectors>
     <detector>
-        <name>sCMOS_ESRF1</name>
+        <name>sCMOS_ESRF</name>
         <myDimensions>
-            <dimX>500</dimX>
-            <dimY>1500</dimY>
+            <dimX>200</dimX>
+            <dimY>200</dimY>
         </myDimensions>
-        <myPixelSize unit="um">21.948</myPixelSize>
-        <myPSF unit="pixel">0</myPSF>
+        <myPixelSize unit="um">6</myPixelSize>
+        <myPSF unit="pixel">1</myPSF>
     </detector>
     
     <detector>
         <name>sCMOS_ESRF2</name>
         <myDimensions>
-            <dimX>200</dimX>
-            <dimY>200</dimY>
+            <dimX>500</dimX>
+            <dimY>1500</dimY>
         </myDimensions>
-        <myPixelSize unit="um">3</myPixelSize>
-        <myPSF unit="pixel">2.5</myPSF>
+        <myPixelSize unit="um">24</myPixelSize>
+        <myPSF unit="pixel">1.2</myPSF>
     </detector>
     
     <detector>
         <name>flatPanelSimap</name>
         <myDimensions>
-            <dimX>100</dimX>
-            <dimY>100</dimY>
+            <dimX>300</dimX>
+            <dimY>300</dimY>
         </myDimensions>
-        <myPixelSize unit="um">127</myPixelSize>
-        <myPSF unit="pixel">0</myPSF>
+        <myPixelSize unit="um">50</myPixelSize>
+        <myPSF unit="pixel">1</myPSF>
         <myScintillatorMaterial>CsI</myScintillatorMaterial>
         <myScintillatorThickness unit="um">600</myScintillatorThickness>
     </detector>
@@ -34,8 +34,8 @@
     <detector>
         <name>SPC</name>
         <myDimensions>
-            <dimX>100</dimX>
-            <dimY>900</dimY>
+            <dimX>500</dimX>
+            <dimY>1500</dimY>
         </myDimensions>
         <myPixelSize unit="um">75</myPixelSize>
         <myPSF unit="pixel">0</myPSF>

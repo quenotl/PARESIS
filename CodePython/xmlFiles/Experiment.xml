@@ -1,30 +1,16 @@
 
 <listExperiment>
     <experiment>
-        <name>id17_FilNylon_md1217</name>
+        <name>Fil_Nylon_ID17</name>
         <distSourceToMembrane unit="m">144</distSourceToMembrane>
         <distMembraneToObject unit="m">1.6</distMembraneToObject>
         <distObjectToDetector unit="m">3.6</distObjectToDetector>
-        <membraneName>Mask_CuSn_From_txt</membraneName>
+        <membraneName>Mask_CuSn_From_txt_config1</membraneName>
         <sampleName>filNylon</sampleName>
         <sampleType>AnalyticalSample</sampleType>
-        <detectorName>sCMOS_ESRF2</detectorName>
+        <detectorName>sCMOS_ESRF</detectorName>
         <sourceName>id17</sourceName>
-        <meanShotCount>3000</meanShotCount>
-    </experiment>
-    
-    <experiment>
-        <name>SIMAP_FilNylon_mars2021</name>
-        <distSourceToMembrane unit="m">0.0415</distSourceToMembrane>
-        <distMembraneToObject unit="m">0.0215</distMembraneToObject>
-        <distObjectToDetector unit="m">0.607</distObjectToDetector>
-        <membraneName>Mask_CuSn_From_txt</membraneName>
-        <sampleName>filNylon</sampleName>
-        <plaqueName>C_plaque</plaqueName>
-        <sampleType>AnalyticalSample</sampleType>
-        <detectorName>flatPanelSimap</detectorName>
-        <sourceName>simap</sourceName>
-        <meanShotCount>169000</meanShotCount>
+        <meanShotCount>3000000</meanShotCount>
     </experiment>
    
     <experiment>
@@ -32,21 +18,21 @@
         <distSourceToMembrane unit="m">144</distSourceToMembrane>
         <distMembraneToObject unit="m">1.6</distMembraneToObject>
         <distObjectToDetector unit="m">3.6</distObjectToDetector>
-        <membraneName>RandomSpheresSegmentedFromFileFe90ID17</membraneName>
-        <sampleName>ContrastPhantomC</sampleName>
+        <membraneName>Mask_CuSn_From_edf</membraneName>
+        <sampleName>ContrastPhantomID17</sampleName>
         <sampleType>AnalyticalSample</sampleType>
-        <detectorName>sCMOS_ESRF1</detectorName>
+        <detectorName>sCMOS_ESRF2</detectorName>
         <sourceName>id17</sourceName>
-        <meanShotCount>3000</meanShotCount>
+        <meanShotCount>3000000</meanShotCount>
     </experiment>
     
     <experiment>
-        <name>SIMAP_ContrastPhantom</name>
-        <distSourceToMembrane unit="m">0.25</distSourceToMembrane>
+        <name>SIMAP_SpheresInTube</name>
+        <distSourceToMembrane unit="m">0.5</distSourceToMembrane>
         <distMembraneToObject unit="m">0</distMembraneToObject>
         <distObjectToDetector unit="m">1</distObjectToDetector>
-        <membraneName>RandomSpheresSegmentedFromFileFe90Simap</membraneName>
-        <sampleName>ContrastPhantomC</sampleName>
+        <membraneName>Mask_CuSn_From_txt</membraneName>
+        <sampleName>spheres_in_tube</sampleName>
         <sampleType>AnalyticalSample</sampleType>
         <detectorName>flatPanelSimap</detectorName>
         <sourceName>simap</sourceName>
@@ -54,29 +40,16 @@
     </experiment>
     
     <experiment>
-        <name>Clinic_ContrastPhantom</name>
-        <distSourceToMembrane unit="m">1</distSourceToMembrane>
-        <distMembraneToObject unit="m">0</distMembraneToObject>
-        <distObjectToDetector unit="m">1</distObjectToDetector>
-        <membraneName>RandomSpheresSegmentedFromFileFe90</membraneName>
-        <sampleName>ContrastPhantomB</sampleName>
-        <sampleType>AnalyticalSample</sampleType>
-        <detectorName>flatPanelClinic</detectorName>
-        <sourceName>clinic</sourceName>
-        <meanShotCount>27600</meanShotCount>
-    </experiment>
-    
-    <experiment>
-        <name>TheoreticalStudy</name>
+        <name>SpectralClinic_ContrastPhantom</name>
         <distSourceToMembrane unit="m">0.58</distSourceToMembrane>
         <distMembraneToObject unit="m">0.02</distMembraneToObject>
         <distObjectToDetector unit="m">0.6</distObjectToDetector>
-        <membraneName>Mask_CuSn_From_txt</membraneName>
-        <sampleName>ContrastPhantomTheo</sampleName>
+        <membraneName>Mask_CuSn_From_txt_config3</membraneName>
+        <sampleName>ContrastPhantomSpectralClinic</sampleName>
         <sampleType>AnalyticalSample</sampleType>
         <detectorName>SPC</detectorName>
-        <sourceName>Theo1</sourceName>
-        <meanShotCount>124000</meanShotCount>
+        <sourceName>clinic</sourceName>
+        <meanShotCount>27600</meanShotCount>
     </experiment>
 </listExperiment>
 

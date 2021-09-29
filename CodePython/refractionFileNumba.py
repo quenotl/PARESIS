@@ -33,7 +33,7 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
     Lambda=6.626*1e-34*2.998e8/(Energy*1000*1.6e-19)
     k=2*np.pi/Lambda
     Nx,Ny=intensityRefracted.shape
-    margin2=2
+    margin2=10
     
     #Get from the phase information to the displacement in pixel after propagation
     dphix,dphiy=np.gradient(phi,studyPixelSize*1e-6, edge_order=2)
@@ -47,6 +47,9 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
     intensityRefracted[abs(Dy)>1e3]=0
     Dx[abs(Dx)>1e3]=0
     Dy[abs(Dy)>1e3]=0
+    Dx=np.pad(Dx,margin2,mode='constant')
+    Dy=np.pad(Dy,margin2,mode='constant')
+    intensityRefracted=np.pad(intensityRefracted,margin2,mode='constant')
     
     #initialize the resulting intensity matrix with a margin for the calculation
     intensityRefracted2=np.zeros((Nx+2*margin2, Ny+2*margin2))

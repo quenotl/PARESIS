@@ -126,20 +126,20 @@ def openContrastPhantom(myGeometryFolder,dimX, dimY, pixsize,oversamp, angle):
     
 if __name__ == "__main__":
         # PARAMETERS
-    number_of_positions=10
+    number_of_positions=2
     imageMargins=10
-    overSamp=4
-    Nx=100 #Detector size
-    Ny=900
+    overSamp=2
+    Nx=500 #Detector size
+    Ny=1500
     dimX=int((Nx+2*imageMargins)*overSamp)
     dimY=int((Ny+2*imageMargins)*overSamp)
-    dist_source_membrane=0.6 #in m
-    dist_membrane_detector=0.6 #in m
-    detector_pixel_size=75 #in um
-    magnification=(dist_membrane_detector+dist_source_membrane)/dist_source_membrane
+    dist_source_sample=0.6 #in m
+    dist_sample_detector=0.6 #in m
+    detector_pixel_size=50 #in um
+    magnification=(dist_sample_detector+dist_source_sample)/dist_source_sample
     pixSize=detector_pixel_size/overSamp/magnification #in um
 
-    angle=50
+    angle=50 #point of view for thickness maps
     geometry2=generateContrastPhantom(dimX, dimY, pixSize, angle)
     dim=geometry2[0].shape
 #    geometry=geometry.tolist()
@@ -152,4 +152,4 @@ if __name__ == "__main__":
         
     for i in range(13):
         txtPoint = '%2.2d' % i
-        # saveEdf(geometry2[i], filepath+"/mat"+txtPoint+".edf")
+        saveEdf(geometry2[i], filepath+"/mat"+txtPoint+".edf")

@@ -2,8 +2,8 @@
     <source>
         <name>id17</name>
         <myType>Monochromatic</myType>
-        <mySize unit="um">1</mySize>
-        <myEnergy unit="kev">33</myEnergy>
+        <mySize unit="um">10</mySize>
+        <myEnergy unit="kev">52</myEnergy>
     </source>
     
     <source>
@@ -18,7 +18,7 @@
     </source>
     
     <source>
-        <name>Theo1</name>
+        <name>clinic</name>
         <myType>Polychromatic</myType>
         <mySize unit="um">20</mySize>
         <sourceVoltage unit="kVp">55</sourceVoltage>

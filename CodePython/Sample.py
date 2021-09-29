@@ -11,15 +11,11 @@ from xml.dom import minidom
 import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
-from Samples.getPunchedMembrane import getMembranePunched
-from Samples.getMembraneMesh import getMembraneMesh
-from Samples.getMembranePyramids import getMembranePyramids
 import xlrd
 from matplotlib import pyplot as plt
-from Samples.createSphere import CreateSampleSphere
+from Samples.createSphere import CreateSampleSphere, CreateSampleSpheresInTube
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import time
-from Samples.HumbleCircle import CreateSampleSphereMultiple
 from numba import jit 
 
 class Sample:
@@ -58,12 +54,7 @@ class Sample:
                 if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
                     self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
-                if self.myGeometryFunction=="getMembranePunched":
-                    self.myMembraneFile=self.getText(currentSample.getElementsByTagName("myMembraneFile")[0])
-                    self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
-                    self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
-                    self.myPlateThickness=int(self.getText(currentSample.getElementsByTagName("myPlateThickness")[0]))
-                    
+                
                 if self.myGeometryFunction=="get_my_thickness":
                     if self.myName!="air_volume":
                         self.myThickness=float(self.getText(currentSample.getElementsByTagName("myThickness")[0]))
@@ -75,15 +66,12 @@ class Sample:
                     self.myVoxelSize=float(self.getText(currentSample.getElementsByTagName("myVoxelSize")[0]))
                     self.myVolumesFiles=self.getText(currentSample.getElementsByTagName("myVolumesFiles")[0])
                     self.myVolumesFiles=list(self.myVolumesFiles.split(","))        
-                    
-                if self.myName=='FingerAnalytic':
-                    self.myProjectionNumber=int(self.getText(currentSample.getElementsByTagName("myProjectionNumber")[0]))
-
+                
                 if self.myGeometryFunction=="openContrastPhantom":
                     self.myGeometryFolder=self.getText(currentSample.getElementsByTagName("myGeometryFolder")[0])
 
                 return
-        
+        print(self.myName)
         raise ValueError("Sample not found in the xml file")
 
     def getText(self,node):
@@ -194,6 +182,9 @@ class AnalyticalSample(Sample):
                 plt.colorbar()
                 plt.show()
                 return                
+            if self.myGeometryFunction=="CreateSampleSpheresInTube":
+                self.myGeometry =CreateSampleSpheresInTube(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
+                return              
             if self.myGeometryFunction=="CreateSampleSphere":
                 self.myGeometry =CreateSampleSphere(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
                 print("Nylon Sphere Geometry")
@@ -210,15 +201,6 @@ class AnalyticalSample(Sample):
                 self.myGeometry=openContrastPhantom(self.myGeometryFolder,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp, angle=90)
                 self.myGeometry=np.array(self.myGeometry)
                 return
-            if self.myGeometryFunction=="CreateFourSpheres":
-                self.myGeometry=CreateSampleSphereMultiple(dimX = studyDimensions[0], dimY = studyDimensions[1], pixelSize = studyPixelSize)
-                print("dim X : ", studyDimensions[0], " dim y : ", studyDimensions[1], "Pixel size : ", studyPixelSize)
-                plt.figure()
-                plt.imshow(self.myGeometry[0,:,:])
-                plt.title("Four spheres")
-                plt.colorbar()
-                plt.show()
-                return
         
         if self.myType=="membrane":
             if self.myGeometryFunction=="getMembraneFromFile":
@@ -230,16 +212,6 @@ class AnalyticalSample(Sample):
                 self.myGeometry.append(getMembraneSegmentedFromFile(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
                 self.myGeometry.append(np.ones((studyDimensions[0], studyDimensions[1]))*self.myPMMAThickness*1e-6)
                 self.myGeometry=np.array(self.myGeometry)
-                return
-            if self.myGeometryFunction=="getMembranePunched":
-                self.myGeometry.append(getMembranePunched(self,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp,pointNum))
-                self.myGeometry=np.array(self.myGeometry)
-                return
-            if self.myGeometryFunction=="getMembraneMesh":
-                self.myGeometry=getMembraneMesh(self,studyDimensions[0], studyDimensions[1],studyPixelSize,oversamp, pointNum, number_of_positions) 
-                return
-            if self.myGeometryFunction=="getMembranePyramids":
-                self.myGeometry=getMembranePyramids(self,studyDimensions[0], studyDimensions[1],studyPixelSize,oversamp, pointNum, number_of_positions) 
                 return
         
         if self.myGeometryFunction=="get_my_thickness":

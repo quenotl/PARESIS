@@ -123,21 +123,21 @@ if __name__ == "__main__":
     class Membrane():
         def __init__(self):
             self.myMembraneFile='Membranes/CuSn.txt'
-            self.myMeanSphereRadius=20
+            self.myMeanSphereRadius=30
             self.myNbOfLayers=2
             return
     
     # PARAMETERS
-    number_of_positions=10
+    number_of_positions=2
     imageMargins=10
-    overSamp=4
-    Nx=100 #Detector size
-    Ny=900
+    overSamp=2
+    Nx=500 #Detector size
+    Ny=1500
     dimX=int((Nx+2*imageMargins)*overSamp)
     dimY=int((Ny+2*imageMargins)*overSamp)
-    dist_source_membrane=0.58 #in m
-    dist_membrane_detector=0.62 #in m
-    detector_pixel_size=75 #in um
+    dist_source_membrane=144 #in m
+    dist_membrane_detector=5.2 #in m
+    detector_pixel_size=24 #in um
     magnification=(dist_membrane_detector+dist_source_membrane)/dist_source_membrane
     pixSize=detector_pixel_size/overSamp/magnification
     
