@@ -58,7 +58,7 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
     DyFloor=Dy.astype(np.int)
     
     #Call the fast function for the loop on all the pixels
-    fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, DyFloor)
+    fastloopNumba(Nx+2*margin2, Ny+2*margin2,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, DyFloor)
     intensityRefracted2 = intensityRefracted2[margin2:Nx+margin2,margin2:Ny+margin2]
     
     #check for errors in the calculation (there shouldn't be but we never know)
