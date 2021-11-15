@@ -12,10 +12,7 @@ import time
 from Source import Source
 from Detector import Detector
 from Sample import AnalyticalSample
-from numpy.fft import fftshift
-from numpy.fft import ifftshift
-from numpy.fft import fft2
-from numpy.fft import ifft2
+from numpy.fft import fftshift, ifftshift, fft2, ifft2
 from matplotlib import pyplot as plt
 from numpy import pi as pi
 from refractionFileNumba import fastRefraction

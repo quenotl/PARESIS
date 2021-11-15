@@ -104,34 +104,27 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, D
                 jnew=j+int(np.floor(Dytmp))
                 Dytmp=Dytmp-np.floor(Dytmp)
             #Calculating sub-pixel displacement
-            if 0<=inew<Nx:
-                if 0<=jnew<Ny:
-                    intensityRefracted2[inew,jnew]+=Iij*(1-abs(Dxtmp))*(1-abs(Dytmp))
-                    if inew<Nx-1:
-                        if Dxtmp>=0:
-                            if jnew<Ny-1:
-                                if Dytmp>=0:
-                                    intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-Dytmp)
-                                    intensityRefracted2[inew+1,jnew+1]+=Iij*Dxtmp*Dytmp
-                                    intensityRefracted2[inew,jnew+1]+=Iij*(1-Dxtmp)*Dytmp
-                            if jnew>0:
-                                if Dytmp<0:
-                                    intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-abs(Dytmp))
-                                    intensityRefracted2[inew+1,jnew-1]+=Iij*Dxtmp*abs(Dytmp)
-                                    intensityRefracted2[inew,jnew-1]+=Iij*(1-Dxtmp)*abs(Dytmp)
-                    
-                    if inew>0:
-                        if Dxtmp<0:
-                            if jnew<Ny-1:
-                                if Dytmp>=0:
-                                    intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-Dytmp)
-                                    intensityRefracted2[inew-1,jnew+1]+=Iij*abs(Dxtmp)*Dytmp
-                                    intensityRefracted2[inew,jnew+1]+=Iij*(1-abs(Dxtmp))*Dytmp
-                            if jnew>0:
-                                if Dytmp<0:
-                                    intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-abs(Dytmp))
-                                    intensityRefracted2[inew-1,jnew-1]+=Iij*Dxtmp*Dytmp
-                                    intensityRefracted2[inew,jnew-1]+=Iij*(1-abs(Dxtmp))*abs(Dytmp)
+            if 0<=inew<Nx and 0<=jnew<Ny:
+                intensityRefracted2[inew,jnew]+=Iij*(1-abs(Dxtmp))*(1-abs(Dytmp))
+                if inew<Nx-1 and Dxtmp>=0:
+                    if jnew<Ny-1 and Dytmp>=0:
+                        intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-Dytmp)
+                        intensityRefracted2[inew+1,jnew+1]+=Iij*Dxtmp*Dytmp
+                        intensityRefracted2[inew,jnew+1]+=Iij*(1-Dxtmp)*Dytmp
+                    if jnew>0 and Dytmp<0:
+                        intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-abs(Dytmp))
+                        intensityRefracted2[inew+1,jnew-1]+=Iij*Dxtmp*abs(Dytmp)
+                        intensityRefracted2[inew,jnew-1]+=Iij*(1-Dxtmp)*abs(Dytmp)
+                
+                if inew>0 and Dxtmp<0:
+                    if jnew<Ny-1 and Dytmp>=0:
+                        intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-Dytmp)
+                        intensityRefracted2[inew-1,jnew+1]+=Iij*abs(Dxtmp)*Dytmp
+                        intensityRefracted2[inew,jnew+1]+=Iij*(1-abs(Dxtmp))*Dytmp
+                    if jnew>0 and Dytmp<0:
+                        intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-abs(Dytmp))
+                        intensityRefracted2[inew-1,jnew-1]+=Iij*Dxtmp*Dytmp
+                        intensityRefracted2[inew,jnew-1]+=Iij*(1-abs(Dxtmp))*abs(Dytmp)
     return intensityRefracted2
 
 
