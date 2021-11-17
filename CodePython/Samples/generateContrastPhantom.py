@@ -33,9 +33,9 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     
     # Everything in pix
     smallTubesRadiuspix=smallTubesRadius/pixsize #pix
-    smallTubesRadiuspixInt=int(np.floor(smallTubesRadiuspix)+2) #pixEntier
+    smallTubesRadiuspixInt=int(smallTubesRadiuspix+2) #pixEntier
     supportRadiuspix=supportRadius/pixsize
-    supportRadiuspixInt=int(np.floor(supportRadiuspix)+2)
+    supportRadiuspixInt=int(supportRadiuspix)+2
     
     origin=dimY/2-16/pixsize #pix
     
@@ -91,8 +91,8 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
         if imat<12:
             projMat=projMat*Line
         if imat==12:
-            projMat[int(np.floor(dimX/2)):dimX]=projMat[int(np.floor(dimX/2)):dimX]*Line
-            projMat[0:int(np.floor(dimX/2))]=0    
+            projMat[int(dimX/2):dimX]=projMat[int(dimX/2):dimX]*Line
+            projMat[0:int(dimX/2)]=0    
         
         projTot+=projMat*(imat+1)*pixsize*1e-3
         geometry.append(projMat*pixsize*1e-3)

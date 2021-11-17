@@ -39,13 +39,13 @@ def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp,
 
 
 def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
-    margin=int(np.ceil(10*sample.myMeanSphereRadius/pixSize)) #in pix
-    margin2=int(np.floor(margin/2))
+    margin=int(10*sample.myMeanSphereRadius/pixSize)+1 #in pix
+    margin2=int(margin/2)
     
     if sample.myMembraneFile.split('/')[-1]=='CuSn.txt':
         corrFactor=sample.myMeanSphereRadius/4.57 #to adapt the scale to the mean sphere radius desired
-        membraneSizeinFilex=int(np.floor(8102))*corrFactor+sample.myMeanSphereRadius
-        membraneSizeinFiley=int(np.floor(9740))*corrFactor+sample.myMeanSphereRadius
+        membraneSizeinFilex=8102*corrFactor+sample.myMeanSphereRadius #??? int(np.floor(8102))
+        membraneSizeinFiley=9740*corrFactor+sample.myMeanSphereRadius #??? int(np.floor(9740))
     else: 
         raise Exception("Enter segmented membrane size ")
     
@@ -100,7 +100,7 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
         
         for i in range(Nsphere):
             radFloat=parameters[i,2]/pixSize
-            radInt=int(np.floor(radFloat))+1
+            radInt=int(radFloat)+1
             xdata=parameters[i,0]
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
             yfloat=parameters[i,0]/pixSize-Offsety+offsetCorr
