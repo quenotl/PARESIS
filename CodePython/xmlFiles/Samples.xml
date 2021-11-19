@@ -84,7 +84,14 @@
         <myGeometryFolder>ContrastPhantom/CP_pixsize25um_1040x3040_angle50deg/</myGeometryFolder>
         <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
     </sample>
-    
+
+    <sample>
+        <name>spheres_in_tube2</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>CreateSampleSpheresInTube</myGeometryFunction>
+        <myMaterials>Muscle,Cartilage,Water</myMaterials>
+    </sample>
+
     <!--ADDITIONNAL ELEMENTS-->
     
     <sample>
@@ -99,7 +106,7 @@
         <name>air_volume</name>
         <myType>volume</myType>
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
-        <myMaterials>Air</myMaterials>
+        <myMaterials>Vacuum</myMaterials>
     </sample>
     
 </listSamples>

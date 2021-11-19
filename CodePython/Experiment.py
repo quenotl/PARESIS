@@ -23,7 +23,7 @@ class Experiment:
         """Experiment class constructor.
             
         Args:
-            exp_dict (dict): dictionnary of simulation algorithm parameters
+            exp_dict (dict): dictionary of simulation algorithm parameters
         """
         self.xmlExperimentFileName="xmlFiles/Experiment.xml"
         self.xmldoc = minidom.parse(self.xmlExperimentFileName)
@@ -243,7 +243,6 @@ class Experiment:
         """
         
         #INITIALIZING PARAMETERS
-        totalFlux=0 
         sumIntensity=0
         ibin=0
         ien=0
@@ -268,8 +267,7 @@ class Experiment:
         
         
         #Defining total flux for normalizing spectrum
-        for currentEnergy, flux in self.mySource.mySpectrum:
-            totalFlux+=flux
+        totalFlux = sum([flux for currentEnergy, flux in self.mySource.mySpectrum])
         i=0
         #Calculating everything for each energy of the spectrum
         for currentEnergy, flux in self.mySource.mySpectrum:

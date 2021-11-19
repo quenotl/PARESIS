@@ -17,6 +17,8 @@ from Samples.createSphere import CreateSampleSphere, CreateSampleSpheresInTube
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import time
 from numba import jit 
+import pandas as pd
+import xraylib
 
 class Sample:
     def __init__(self):
@@ -89,54 +91,72 @@ class Sample:
             None.
 
         """
-        energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
-        print("Materials :", self.myMaterials)
-        pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
-        deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
-        
-        i=0
-        for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
-            for imat in range(len(self.myMaterials)):
-                delta=[]
-                beta=[]
-                for col in range(sh.ncols):
-                    row=0
-                    myCell = sh.cell(row, col)
-#                    print("\n\n Sample materials : ",self.myMaterials[imat])
-                    if myCell.value == self.myMaterials[imat]:
-                        row=row+3
-                        for energy,_ in sourceSpectrum:
-                            currentCellValue=sh.cell(row,col).value
-                            if energy*1000<currentCellValue: #E is in keV in the spectrum and in eV in the tables delta-beta file
-                                delta.append((energy,0))
-                                beta.append((energy,1))
-                                print("No delta beta values under",currentCellValue, "eV")
-                                continue
-                            nextCellValue=sh.cell(row+1,col).value
-                            while nextCellValue<energy*1e3: #find in which interval the energy is in the delta beta tables
-                                row+=1
+        try:
+            pathmaterials = 'Samples/DeltaBeta/Materials.csv'
+            df = pd.read_csv(pathmaterials)
+            df = df.set_index('Material')
+            if not all(material in df.index.tolist() for material in self.myMaterials):
+                raise Exception('Not all materials in Materials.csv')
+            for material in self.myMaterials:
+                beta = []
+                delta = []
+                for energy, _ in sourceSpectrum:
+                    print(df['Formula'][material])
+                    n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
+                    beta.append((energy, n.imag))
+                    delta.append((energy, 1-n.real))
+                self.beta.append(beta)
+                self.delta.append(delta)
+        except Exception as err:
+            print(err)
+            energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
+            print("Materials :", self.myMaterials)
+            pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
+            deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
+            
+            i=0
+            for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
+                for imat in range(len(self.myMaterials)):
+                    delta=[]
+                    beta=[]
+                    for col in range(sh.ncols):
+                        row=0
+                        myCell = sh.cell(row, col)
+    #                    print("\n\n Sample materials : ",self.myMaterials[imat])
+                        if myCell.value == self.myMaterials[imat]:
+                            row=row+3
+                            for energy,_ in sourceSpectrum:
                                 currentCellValue=sh.cell(row,col).value
+                                if energy*1000<currentCellValue: #E is in keV in the spectrum and in eV in the tables delta-beta file
+                                    delta.append((energy,0))
+                                    beta.append((energy,1))
+                                    print("No delta beta values under",currentCellValue, "eV")
+                                    continue
                                 nextCellValue=sh.cell(row+1,col).value
-                            #Linear interpollation between those values
-                            step=nextCellValue-currentCellValue
-                            currentCellDelta=float(sh.cell(row,col+1).value)
-                            nextCellDelta=float(sh.cell(row+1,col+1).value)
-                            currentCellBeta=float(sh.cell(row,col+2).value)
-                            nextCellBeta=float(sh.cell(row+1,col+2).value)
-                            deltaInterp=abs(nextCellValue-energy*1e3)/step*currentCellDelta+abs(currentCellValue-energy*1e3)/step*nextCellDelta
-                            betaInterp=abs(nextCellValue-energy*1e3)/step*currentCellBeta+abs(currentCellValue-energy*1e3)/step*nextCellBeta
-                            delta.append((energy,deltaInterp))
-                            beta.append((energy,betaInterp))
-                               
+                                while nextCellValue<energy*1e3: #find in which interval the energy is in the delta beta tables
+                                    row+=1
+                                    currentCellValue=sh.cell(row,col).value
+                                    nextCellValue=sh.cell(row+1,col).value
+                                #Linear interpollation between those values
+                                step=nextCellValue-currentCellValue
+                                currentCellDelta=float(sh.cell(row,col+1).value)
+                                nextCellDelta=float(sh.cell(row+1,col+1).value)
+                                currentCellBeta=float(sh.cell(row,col+2).value)
+                                nextCellBeta=float(sh.cell(row+1,col+2).value)
+                                deltaInterp=abs(nextCellValue-energy*1e3)/step*currentCellDelta+abs(currentCellValue-energy*1e3)/step*nextCellDelta
+                                betaInterp=abs(nextCellValue-energy*1e3)/step*currentCellBeta+abs(currentCellValue-energy*1e3)/step*nextCellBeta
+                                delta.append((energy,deltaInterp))
+                                beta.append((energy,betaInterp))
+                                
+                                
+                            self.beta.append(beta)
+                            self.delta.append(delta)
                             
-                        self.beta.append(beta)
-                        self.delta.append(delta)
-                        
-            a, b, c=np.shape(self.delta)
-            if a<len(self.myMaterials):
-                raise ValueError("One or more materials have not been found in delta beta tables")
-            return
-        print("getDeltaBeta nest pas encore implemente")
+                a, b, c=np.shape(self.delta)
+                if a<len(self.myMaterials):
+                    raise ValueError("One or more materials have not been found in delta beta tables")
+                return
+            print("getDeltaBeta nest pas encore implemente")
             
 #***********************************************************************************************************
 ##ANALYTICAL SAMPLE
@@ -301,5 +321,3 @@ class AnalyticalSample(Sample):
             
         # print('Finished setting wave through', self.myName)
         return disturbedIntensity, disturbedPhi
-        
-        

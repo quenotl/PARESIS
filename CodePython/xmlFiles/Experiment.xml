@@ -32,7 +32,7 @@
         <distMembraneToObject unit="m">0</distMembraneToObject>
         <distObjectToDetector unit="m">1</distObjectToDetector>
         <membraneName>Mask_CuSn_From_txt</membraneName>
-        <sampleName>spheres_in_tube</sampleName>
+        <sampleName>spheres_in_tube2</sampleName>
         <sampleType>AnalyticalSample</sampleType>
         <detectorName>flatPanelSimap</detectorName>
         <sourceName>simap</sourceName>
