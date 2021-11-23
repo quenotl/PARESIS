@@ -6,7 +6,8 @@ Created on Thu Apr 29 16:47:58 2021
 @author: quenot
 """
 import numpy as np
-from numba import jit 
+from getk import getk
+from numba import njit
 
 def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,studyPixelSize):
     """
@@ -30,8 +31,7 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
 
     """
     #Get usefull experimental constants
-    Lambda=6.626*1e-34*2.998e8/(Energy*1000*1.6e-19)
-    k=2*np.pi/Lambda
+    k = getk(1000*Energy)
     Nx,Ny=intensityRefracted.shape
     margin2=10
     
@@ -53,12 +53,9 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
     
     #initialize the resulting intensity matrix with a margin for the calculation
     intensityRefracted2=np.zeros((Nx+2*margin2, Ny+2*margin2))
-    
-    DxFloor=Dx.astype(np.int)
-    DyFloor=Dy.astype(np.int)
-    
+
     #Call the fast function for the loop on all the pixels
-    fastloopNumba(Nx+2*margin2, Ny+2*margin2,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, DyFloor)
+    intensityRefracted2 = fastloopNumba(Nx+2*margin2, Ny+2*margin2,intensityRefracted,intensityRefracted2,Dy,Dx)
     intensityRefracted2 = intensityRefracted2[margin2:Nx+margin2,margin2:Ny+margin2]
     
     #check for errors in the calculation (there shouldn't be but we never know)
@@ -67,8 +64,8 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
     
     return intensityRefracted2,Dx, Dy    
 
-@jit(nopython=True)
-def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, DyFloor):
+@njit
+def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx):
     """
     Accelerated part of the refraction calculation
 
@@ -79,8 +76,6 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, D
         intensityRefracted2 (2d numpy array): intensity after propag.
         Dy (2d numpy array): Displacement along x (in voxel).
         Dx (2d numpy array): Displacement along y (in voxel).
-        DxFloor (2d numpy array): floored displacement.
-        DyFloor (2d numpy array): floored displacement.
 
     Returns:
         intensityRefracted2 (2d numpy array): intensity after propag.
@@ -115,7 +110,6 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx,DxFloor, D
                         intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-abs(Dytmp))
                         intensityRefracted2[inew+1,jnew-1]+=Iij*Dxtmp*abs(Dytmp)
                         intensityRefracted2[inew,jnew-1]+=Iij*(1-Dxtmp)*abs(Dytmp)
-                
                 if inew>0 and Dxtmp<0:
                     if jnew<Ny-1 and Dytmp>=0:
                         intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-Dytmp)

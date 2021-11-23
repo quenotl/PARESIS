@@ -10,6 +10,8 @@ import os
 import glob
 from xml.dom import minidom
 import numpy as np
+import matplotlib
+matplotlib.interactive(True)
 from matplotlib import pyplot as plt
 from scipy.ndimage.filters import gaussian_filter, median_filter
 import spekpy as sp

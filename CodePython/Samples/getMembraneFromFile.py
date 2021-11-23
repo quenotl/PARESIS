@@ -104,8 +104,8 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
             xdata=parameters[i,0]
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
             yfloat=parameters[i,0]/pixSize-Offsety+offsetCorr
-            x=int(np.round(xfloat))
-            y=int(np.round(yfloat))
+            x=int(xfloat)
+            y=int(yfloat)
             if margin2<x<dimX+margin+margin2 and margin2<y<dimY+margin+margin2:
                 # print(x,y,radFloat)
                 for ii in range(-radInt,radInt):

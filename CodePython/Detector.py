@@ -10,7 +10,7 @@ from xml.dom import minidom
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import time
-from numba import jit
+from numba import njit, prange
 import xlrd
 
 class Detector:
@@ -133,7 +133,7 @@ class Detector:
                     return
             raise ValueError("The scintillator material has not been found in delta beta tables")
     
-@jit(nopython=True)
+@njit(parallel=True)
 def resize(imageToResize,sizeX, sizeY):
     Nx, Ny=imageToResize.shape
     if Nx==sizeX and Ny==sizeY:
@@ -142,8 +142,8 @@ def resize(imageToResize,sizeX, sizeY):
     resizedImage=np.ones((sizeX,sizeY))
     sampFactor=int(Nx/sizeX)
     
-    for x0 in range(sizeX):
-        for y0 in range(sizeY):
+    for x0 in prange(sizeX):
+        for y0 in prange(sizeY):
             resizedImage[x0,y0]=np.sum(imageToResize[int(x0*sampFactor):int(x0*sampFactor+sampFactor),int(y0*sampFactor):int(y0*sampFactor+sampFactor)])
             
     return resizedImage

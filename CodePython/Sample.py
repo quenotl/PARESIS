@@ -91,6 +91,7 @@ class Sample:
             None.
 
         """
+        print("Materials :", self.myMaterials)
         try:
             pathmaterials = 'Samples/DeltaBeta/Materials.csv'
             df = pd.read_csv(pathmaterials)
@@ -101,7 +102,6 @@ class Sample:
                 beta = []
                 delta = []
                 for energy, _ in sourceSpectrum:
-                    print(df['Formula'][material])
                     n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
                     beta.append((energy, n.imag))
                     delta.append((energy, 1-n.real))
@@ -110,10 +110,8 @@ class Sample:
         except Exception as err:
             print(err)
             energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
-            print("Materials :", self.myMaterials)
             pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
             deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
-            
             i=0
             for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
                 for imat in range(len(self.myMaterials)):
