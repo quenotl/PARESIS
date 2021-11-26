@@ -113,13 +113,10 @@ def openContrastPhantom(myGeometryFolder,dimX, dimY, pixsize,oversamp, angle):
     filepaths=glob.glob(filepath+"/*")
     filepaths.sort()
     print(filepath)
-    geometry=[]
-    if filepaths!=[]:
-        for i in range(13):
-            geometry.append(openImage(filepaths[i]))
+    if filepaths:
+        geometry = [openImage(filepaths(i)) for i in range(13)]
     else:
          raise Exception("The contrast phantom geometry you are trying to load does not exist or is incorrectly named", filepath)   
-    
     return geometry
         
         

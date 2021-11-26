@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 expImagesFilePath=exp_dict['filepath']+'RayTracing_'+str(exp_dict['expID'])+'/'
             os.mkdir(expImagesFilePath)
             os.mkdir(expImagesFilePath+'membraneThickness/')
-            thresholds=experiment.myDetector.myBinsThersholds.copy()
+            thresholds=experiment.myDetector.myBinsThresholds.copy()
             thresholds.insert(0,experiment.mySource.mySpectrum[0][0])
             for ibin in range(Nbin):
                 binstart='%2.2d'%thresholds[ibin]

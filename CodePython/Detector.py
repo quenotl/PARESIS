@@ -24,7 +24,7 @@ class Detector:
         self.myEfficiencyLimit=100. #en kev
         self.margins=exp_dict['margin']
         self.myEnergyLimit=200 #No longer useful?
-        self.myBinsThersholds=[] #keX
+        self.myBinsThresholds=[] #keX
         self.myScintillatorMaterial=None
         self.myScintillatorThickness=0. #um
         self.beta=[]
@@ -51,10 +51,10 @@ class Detector:
                 for node in currentDetector.childNodes:
                     if node.localName=="myEnergyLimit":
                         self.myEnergyLimit=float(self.getText(currentDetector.getElementsByTagName("myEnergyLimit")[0]))
-                    if node.localName=="myBinsThersholds":
-                        myBinsThersholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThersholds")[0])
-                        myBinsThersholdsTmp=list(myBinsThersholdsTmp.split(","))
-                        self.myBinsThersholds=[float(ele) for ele in myBinsThersholdsTmp]
+                    if node.localName=="myBinsThresholds":
+                        myBinsThresholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThresholds")[0])
+                        myBinsThresholdsTmp=list(myBinsThresholdsTmp.split(","))
+                        self.myBinsThresholds=[float(ele) for ele in myBinsThresholdsTmp]
                     if node.localName=="myScintillatorMaterial":
                         self.myScintillatorMaterial=(self.getText(currentDetector.getElementsByTagName("myScintillatorMaterial")[0]))
                         self.myScintillatorThickness=float(self.getText(currentDetector.getElementsByTagName("myScintillatorThickness")[0]))
