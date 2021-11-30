@@ -9,10 +9,10 @@ Inspired from Häggmark, I., Shaker, K., & Hertz, H. M. (2020). In Silico Phase-
 """
 import numpy as np
 # PARAMETERS
-energy = 20 #keV
-dist_source_sample=0.6 #in m
-dist_sample_detector=0.6 #in m
-detector_pixel_size=75 #in um
+energy = 39.5 #keV
+dist_source_sample=0.5 #in m
+dist_sample_detector=1 #in m
+detector_pixel_size=50 #in um
 
 
 def kevToLambda(energyInKev):

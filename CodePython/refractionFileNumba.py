@@ -86,7 +86,7 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx):
             Iij=intensityRefracted[i,j]
             Dxtmp=Dx[i,j]
             Dytmp=Dy[i,j]
-            if Dxtmp==0 and Dytmp==0:
+            if not Dxtmp and not Dytmp:
                 intensityRefracted2[i,j]+=Iij
                 continue
             inew=i
@@ -94,10 +94,10 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx):
             #Calculating displacement bigger than a pixel
             if abs(Dxtmp)>1:
                 inew=i+int(Dxtmp)
-                Dxtmp=Dxtmp-np.floor(Dxtmp)
+                Dxtmp=Dxtmp-int(Dxtmp)
             if abs(Dytmp)>1:
                 jnew=j+int(Dytmp)
-                Dytmp=Dytmp-np.floor(Dytmp)
+                Dytmp=Dytmp-int(Dytmp)
             #Calculating sub-pixel displacement
             if 0<=inew<Nx and 0<=jnew<Ny:
                 intensityRefracted2[inew,jnew]+=Iij*(1-abs(Dxtmp))*(1-abs(Dytmp))

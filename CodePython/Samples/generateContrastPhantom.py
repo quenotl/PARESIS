@@ -6,13 +6,11 @@ Created on Wed Oct 28 15:05:44 2020
 @author: quenot
 """
 import numpy as np
-from matplotlib import pyplot as plt
-from skimage.transform import radon, rescale
-import json
+import matplotlib.pyplot as plt
+from skimage.transform import radon
 import os
 from InputOutput.pagailleIO import saveEdf,openImage
 import glob
-from numba import jit
 
 def generateContrastPhantom(dimX, dimY, pixsize, angle):
     
@@ -20,14 +18,12 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     pixsize=pixsize/1000 #um to mm
     geometry=[]
     Slice=np.zeros(((13,dimY,dimY)))
-    lines=np.zeros(dimY)
     projTot=np.zeros((dimX, dimY))
     smallTubesRadius=2 #mm
     supportRadius=15 #mm
     TubesCenters=[[22,7],[16.4,4.7],[10,7],[6,12.5],[6,19.5],[10,25],[16.4,27],[22,25],[21,16],[11,16],[16,11],[16,21]]
     Nmat=12        
     TubesCenters=np.asarray(TubesCenters, dtype=np.float64) #mm
-
     
     sliceTotMat=np.zeros((dimY, dimY))
     
@@ -48,8 +44,8 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
         sliceMat=np.zeros((dimY, dimY))
         centeri=TubesCenters[imat,0] #pix
         centerj=TubesCenters[imat,1]
-        centeriInt=int(np.round(centeri)) #pixInt
-        centerjInt=int(np.round(centerj))
+        centeriInt=round(centeri) #pixInt
+        centerjInt=round(centerj)
         for ii in range(centeriInt-smallTubesRadiuspixInt,centeriInt+smallTubesRadiuspixInt):
             for jj in range(centerjInt-smallTubesRadiuspixInt,centerjInt+smallTubesRadiuspixInt):
                 dist=((ii-centeri))**2+((jj-centerj))**2
@@ -59,13 +55,12 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
         Slice[imat]=sliceMat
         sliceTotMat+=sliceMat*(imat+1)
         
-    
     sliceMat=np.zeros((dimY, dimY))
     centeri=dimY/2 #pix
     centerj=dimY/2
-    centeriInt=int(np.round(centeri)) #pixInt
-    centerjInt=int(np.round(centerj))
-    for ii in range(centeriInt-supportRadiuspixInt,int(np.round(27/pixsize+origin))):
+    centeriInt=round(centeri) #pixInt
+    centerjInt=round(centerj)
+    for ii in range(centeriInt-supportRadiuspixInt,round(27/pixsize+origin)):
         for jj in range(centerjInt-supportRadiuspixInt,centerjInt+supportRadiuspixInt):
             if sliceTotMat[ii,jj]==0:
                 dist=((ii-centeri))**2+((jj-centerj))**2
@@ -85,8 +80,8 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
         
         projMat=np.ones((dimX,dimY))
         Line=radon(Slice[imat],[angle])
-        Nx,Ny=Line.shape
-        Line=np.transpose(Line[int(np.round(Nx/2-dimY/2)):int(np.round(Nx/2+dimY/2))])
+        Nx = Line.shape[0]
+        Line=np.transpose(Line[round(Nx/2-dimY/2):round(Nx/2+dimY/2)])
         
         if imat<12:
             projMat=projMat*Line

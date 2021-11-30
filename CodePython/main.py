@@ -14,7 +14,6 @@ import os
 from InputOutput.pagailleIO import saveEdf
 from Experiment import Experiment
 # from ExperimentMultiprocess import Experiment
-import numpy as np
 
 
 if __name__ == "__main__":
@@ -32,7 +31,7 @@ if __name__ == "__main__":
     # Output filepath to store the result images
     exp_dict['filepath']='A:/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=10 # MUST BE AN INTEGER
+    exp_dict['sampleSampling']=11 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=1  #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=False #TODO doesn't do anything
@@ -72,8 +71,9 @@ if __name__ == "__main__":
                 expImagesFilePath=exp_dict['filepath']+'Fresnel_'+str(exp_dict['expID'])+'/'
             if exp_dict['simulation_type']=="RayT":
                 expImagesFilePath=exp_dict['filepath']+'RayTracing_'+str(exp_dict['expID'])+'/'
-            os.mkdir(expImagesFilePath)
-            os.mkdir(expImagesFilePath+'membraneThickness/')
+            if save:
+                os.mkdir(expImagesFilePath)
+                os.mkdir(expImagesFilePath+'membraneThickness/')
             thresholds=experiment.myDetector.myBinsThresholds.copy()
             thresholds.insert(0,experiment.mySource.mySpectrum[0][0])
             for ibin in range(Nbin):
@@ -82,24 +82,25 @@ if __name__ == "__main__":
                 expPathEn.append(f'{expImagesFilePath}{binstart}_{binend}kev/')
                 if len(thresholds)-1==1:
                     expPathEn=[expImagesFilePath]
-                else:
+                elif save:
                     os.mkdir(expPathEn[ibin])
-                os.mkdir(expPathEn[ibin]+'ref/')
-                os.mkdir(expPathEn[ibin]+'sample/')
-                os.mkdir(expPathEn[ibin]+'propag/')
+                if save:
+                    os.mkdir(expPathEn[ibin]+'ref/')
+                    os.mkdir(expPathEn[ibin]+'sample/')
+                    os.mkdir(expPathEn[ibin]+'propag/')
             
         txtPoint = '%2.2d' % pointNum
-        saveEdf(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+'.edf')
-            
-        for ibin in range(Nbin):
-            saveEdf(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
-            saveEdf(ReferenceImageTmp[ibin], expPathEn[ibin]+'ref/ReferenceImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
-            
-            if pointNum==0:
-                saveEdf(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+'.edf')
-                saveEdf(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+'.edf')
-
-    experiment.saveAllParameters(time0,exp_dict)
+        if save:
+            saveEdf(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+'.edf')
+            for ibin in range(Nbin):
+                saveEdf(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
+                saveEdf(ReferenceImageTmp[ibin], expPathEn[ibin]+'ref/ReferenceImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
+                
+                if pointNum==0:
+                    saveEdf(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+'.edf')
+                    saveEdf(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+'.edf')
+    if save:
+        experiment.saveAllParameters(time0,exp_dict)
     
     print("\nfini")
  

@@ -6,16 +6,10 @@ Created on Wed Jan 15 17:30:05 2020
 @author: quenot
 """
 
-import os
-import glob
 from xml.dom import minidom
 import numpy as np
-import matplotlib
-matplotlib.interactive(True)
-from matplotlib import pyplot as plt
-from scipy.ndimage.filters import gaussian_filter, median_filter
+import matplotlib.pyplot as plt
 import spekpy as sp
-
 
 
 class Source:
@@ -29,6 +23,9 @@ class Source:
         self.exitingWindowMaterial=None
         self.myTargetMaterial='W'
         self.myEnergySampling=1
+
+    def __str__(self):
+        return f'Source: {self.myName}\n Size: {self.mySize} um\n Type: {self.myType}\n Spectrum: {self.mySpectrum} (KeV, 1) \n'
         
     def defineCorrectValuesSource(self):
         """
@@ -75,7 +72,6 @@ class Source:
         # Monochromatic source case
         if self.myType=="Monochromatic":
             self.mySpectrum.append((float(self.getText(self.currentSource.getElementsByTagName("myEnergy")[0])),1))
-            spectrum=self.mySpectrum
             return
         
         # Polychromatic source case
@@ -87,20 +83,20 @@ class Source:
                 s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
             spectrum=s.get_spectrum()
             
-            plt.figure()
+            plt.figure('Source Filtered Spectrum')
             plt.plot(spectrum[0],spectrum[1])
             plt.xlabel('Energy (keV)')
             plt.title("Source filtered spectrum")
-            plt.show()
+            plt.show(block=False)
             
-            #re-sampling at sourcre energy sampling (to get faster calculation at the end)
+            #re-sampling at source energy sampling (to get faster calculation at the end)
             energyplot=[]
             weightplot=[]
             Nen=len(spectrum[0])
-            Nbin=int(np.ceil(Nen/self.myEnergySampling/2))
+            Nbin = int(-Nen/self.myEnergySampling/2//-1)
             n=0
             totWeight=0
-            for i in range(Nbin-1):
+            for _ in range(Nbin-1):
                 currBin=0
                 weightBin=0
                 energyBin=0
@@ -133,11 +129,11 @@ class Source:
                 weightplot.pop(0)
                 k+=1
                 
-            plt.figure()
+            plt.figure('Resampled Spectrum')
             plt.plot(energyplot,weightplot)
             plt.xlabel('Energy (keV)')
             plt.title("Resampled spectrum")
-            plt.show()
+            plt.show(block=False)
             
             return
             
@@ -174,8 +170,4 @@ if __name__ == "__main__":
     plt.xlabel('Energy (keV)')
     # plt.savefig('/Users/quenot/Library/Mobile Documents/com~apple~CloudDocs/Thèse/ComparaisonSimu/W40kVp.png')
     plt.show()
-    
-    
-    
-    
     

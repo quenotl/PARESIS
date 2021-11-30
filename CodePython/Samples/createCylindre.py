@@ -7,10 +7,8 @@ Created on Thu Jan 16 17:37:42 2020
 """
 import numpy as np
 from xml.dom import minidom
-import random
-from InputOutput.pagailleIO import openImage, saveEdf, openSeq
 import imutils
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 def CreateSampleCylindre(myName, dimX, dimY, pixelSize):
     
@@ -41,11 +39,11 @@ def CreateSampleCylindre(myName, dimX, dimY, pixelSize):
     
                 
     Samplec=imutils.rotate(Sample, angle=WireAngle)
-    print("Fylon Wire Geometry")
-    plt.figure()
+    # print("Fylon Wire Geometry")
+    plt.figure('Samplec')
     plt.imshow(Samplec)
     plt.colorbar()
-    plt.show()
+    plt.show(block=False)
         
         
         

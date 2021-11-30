@@ -13,9 +13,9 @@ def getk(energy):
     """
     energy in eV
     """
-    h=6.626e-34
-    c=2.998e8
-    e=1.6e-19
+    h=6.62607015e-34
+    c=2.99792458e8
+    e=1.60217663e-19
     k=2*np.pi*energy*e/(h*c)
     return k
 

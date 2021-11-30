@@ -18,6 +18,7 @@ from refractionFileNumba import fastRefraction
 from getk import getk
 from joblib import Parallel, delayed
 import multiprocessing as mp
+from minOversampling import minOversampling
 
 class Experiment:
     def __init__(self, exp_dict):
@@ -42,7 +43,7 @@ class Experiment:
         self.myMembrane=None
         self.myPlaque=None
         self.myAirVolume=None
-
+        self.simulation_type=exp_dict['simulation_type']
         self.meanShotCount=0
         self.meanEnergy=0
         self.Dxreal=[]
@@ -82,26 +83,23 @@ class Experiment:
         
         if self.myDetector.myScintillatorMaterial is not None:
             self.myDetector.getBeta(self.mySource.mySpectrum)
-        
-        print('Current experiment:',self.name)
-        print("\nCurrent detector: ",self.myDetector.myName)
-        if self.myDetector.myScintillatorMaterial is not None:
-            print(f"  Scintillator {self.myDetector.myScintillatorMaterial} of {self.myDetector.myScintillatorThickness}um")
-        print("  Detectors dimensions ",self.myDetector.myDimensions)
-        print("Current source: ",self.mySource.myName)
-        print("  Source type:",self.mySource.myType)
-        print("  Source spectrum:",self.mySource.mySpectrum,"eV")
-        print("Current sample:", self.mySampleofInterest.myName)
-        print("  My sample type:", self.mySampleofInterest.myType)
-        print("Current membrane:", self.myMembrane.myName)
-        print("  My membrane type:", self.myMembrane.myType)
-        print("Magnification :", self.magnification)
 
-        print("Study dimensions:", self.studyDimensions)
-        print("Study PixelSize =",self.studyPixelSize,"um")
-        print("Over-sampling factor: ",self.sampling)
-            
+        min_oversampling = max([minOversampling(self.distObjectToDetector, self.distSourceToMembrane+self.distMembraneToObject, energy, self.myDetector.myPixelSize) for energy,_ in self.mySource.mySpectrum]) \
+            if self.simulation_type == 'Fresnel' else 2
+        if self.sampling < min_oversampling:
+            raise ValueError(f'Current sampling ({self.sampling}) is insufficient. The minimum sampling required is: {min_oversampling}')
         
+        print(self.mySource)
+        print(self.myDetector)
+        print(self.mySampleofInterest)
+        print(self.myMembrane)
+        print(f'Study:\n'
+        f' Magnification: {self.magnification}\n'
+        f' Study Dimensions: {self.studyDimensions} pixels\n'
+        f' Study Pixel Size: {self.studyPixelSize} um\n'
+        f' Oversampling: {self.sampling}\n'
+        f' Minimum Oversampling: {min_oversampling}\n')
+
     def defineCorrectValues(self, exp_dict):
         """
         Initializes every compound parameters before calculations
@@ -128,7 +126,6 @@ class Experiment:
                 self.distMembraneToObject=float(self.getText(experiment.getElementsByTagName("distMembraneToObject")[0]))
                 self.distObjectToDetector=float(self.getText(experiment.getElementsByTagName("distObjectToDetector")[0]))
                 self.meanShotCount=float(self.getText(experiment.getElementsByTagName("meanShotCount")[0]))/self.sampling**2
-                
                 for node in experiment.childNodes:
                     if node.localName=="plaqueName":
                         self.myPlaque=AnalyticalSample()
@@ -188,14 +185,13 @@ class Experiment:
             TYPE: DESCRIPTION.
 
         """
-        if propagationDistance==0:
+        if propagationDistance == 0:
             return waveToPropagate
         
         #Propagateur de Fresnel
-        k=getk(Energy*1000)
+        k = getk(Energy*1000)
         
-        Nx=self.studyDimensions[0]        
-        Ny=self.studyDimensions[1]
+        Nx, Ny = self.studyDimensions     
         u, v = np.meshgrid(np.arange(0, Nx), np.arange(0, Ny))
         u = (u - (Nx / 2))
         v = (v - (Ny / 2))
@@ -208,7 +204,7 @@ class Experiment:
         return waveAfterPropagation
     
     
-    def refraction(self,intensityRefracted, phi, propagationDistance,Energy, magnification):
+    def refraction(self, intensityRefracted, phi, propagationDistance, Energy, magnification):
         """
         Computes the intensity after propagation with ray-tracing
 
@@ -225,7 +221,7 @@ class Experiment:
             Dy (2d numpy array): displacements along y.
 
         """
-        intensityRefracted2,Dx, Dy=fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,self.studyPixelSize)
+        intensityRefracted2, Dx, Dy = fastRefraction(intensityRefracted, phi, propagationDistance, Energy, magnification, self.studyPixelSize)
         return intensityRefracted2,Dx, Dy    
     
     def computeSampleAndReferenceImages(self, pointNum):
@@ -285,7 +281,7 @@ class Experiment:
             #Take into account the detector scintillator efficiency if given in xml file
             if self.myDetector.myScintillatorMaterial is not None:
                 beta = [betaEn for energyData, betaEn  in self.myDetector.beta if energyData==currentEnergy][0]
-                k=getk(currentEnergy*1000)
+                k=getk(currentEnergy*1e3)
                 detectedSpectrum=1-np.exp(-2*k*self.myDetector.myScintillatorThickness*1e-6*beta)
                 print("Scintillator efficiency for current energy:", detectedSpectrum)
                 incidentIntensity=incidentIntensity*detectedSpectrum
@@ -437,12 +433,12 @@ class Experiment:
             print("\nCurrent Energy: %gkev" %currentEnergy)
             
             incidentIntensity=incidentIntensity0*flux/totalFlux
-            incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
+            incidentIntensity,_ =self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
             if self.myDetector.myScintillatorMaterial is not None:
                 beta = [betaEn for energyData, betaEn  in self.myDetector.beta if energyData==currentEnergy][0]
-                k=getk(currentEnergy*1000)
+                k=getk(currentEnergy*1e3)
                 detectedSpectrum=1-np.exp(-2*k*self.myDetector.myScintillatorThickness*1e-6*beta)
                 print("Scintillator efficiency for current energy:", detectedSpectrum)
                 incidentIntensity=incidentIntensity*detectedSpectrum

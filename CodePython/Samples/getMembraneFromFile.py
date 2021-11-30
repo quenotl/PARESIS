@@ -12,7 +12,6 @@ from matplotlib import pyplot as plt
 import json
 from InputOutput.pagailleIO import saveEdf,openImage
 import glob
-import cv2
 import os
 
 def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp, numPoint):
@@ -20,11 +19,7 @@ def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp,
     fullImagePaths = glob.glob(myMembraneFile + '/*.tif') + glob.glob(myMembraneFile + '/*.tiff') + glob.glob(myMembraneFile + '/*.edf')
     fullImagePaths.sort()
     thickness=(openImage(fullImagePaths[numPoint]))
-    Nx,Ny=thickness.shape
-    
-    
-    if studyDimensions[0]!=Nx or studyDimensions[1]!=Ny:
-        
+    if not studyDimensions == thickness.shape:
         raise ValueError("The membrane you are trying to load does not have the correct dimensions")
                
     thickness = np.asarray(thickness, dtype=np.float)

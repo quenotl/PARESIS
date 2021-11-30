@@ -6,19 +6,18 @@ Created on Thu Jan 16 10:14:18 2020
 @author: quenot
 """
 
-from InputOutput.pagailleIO import saveEdf,openImage
 from xml.dom import minidom
 import numpy as np
 from Samples.createCylindre import CreateSampleCylindre
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
 import xlrd
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from Samples.createSphere import CreateSampleSphere, CreateSampleSpheresInTube
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
-import time
-from numba import jit 
 import pandas as pd
 import xraylib
+from getk import getk
+import warnings
 
 class Sample:
     def __init__(self):
@@ -28,6 +27,9 @@ class Sample:
         self.myType=""
         self.myMaterials=[]
         self.myGeometry=[]
+    
+    def __str__(self):
+        return f'Sample: {self.myName}\n Type: {self.myType}\n Materials: {self.myMaterials} \n'
         
         
     def defineCorrectValuesSample(self):
@@ -91,13 +93,13 @@ class Sample:
             None.
 
         """
-        print("Materials :", self.myMaterials)
+        # print("Materials :", self.myMaterials)
         try:
             pathmaterials = 'Samples/DeltaBeta/Materials.csv'
             df = pd.read_csv(pathmaterials)
             df = df.set_index('Material')
             if not all(material in df.index.tolist() for material in self.myMaterials):
-                raise Exception('Not all materials in Materials.csv')
+                warnings.warn('Not all materials in Materials.csv. Now searching in TablesDeltaBeta.xls')
             for material in self.myMaterials:
                 beta = []
                 delta = []
@@ -107,8 +109,7 @@ class Sample:
                     delta.append((energy, 1-n.real))
                 self.beta.append(beta)
                 self.delta.append(delta)
-        except Exception as err:
-            print(err)
+        except Exception:
             energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
             pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
             deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
@@ -150,7 +151,7 @@ class Sample:
                             self.beta.append(beta)
                             self.delta.append(delta)
                             
-                a, b, c=np.shape(self.delta)
+                a = np.shape(self.delta)[0]
                 if a<len(self.myMaterials):
                     raise ValueError("One or more materials have not been found in delta beta tables")
                 return
@@ -161,7 +162,7 @@ class Sample:
         
 class AnalyticalSample(Sample):
     def __init__(self):
-        Sample.__init__(self)
+        super().__init__()
         self.delta=[]
         self.beta=[]        
         
@@ -186,30 +187,30 @@ class AnalyticalSample(Sample):
         if self.myType=="sample_of_interest":
             if self.myGeometryFunction=="getSampleFromFile":
                 self.myGeometry = np.load(self.mySampleFile)
-                print("Sample Geometry")
-                plt.figure()
+                # print("Sample Geometry")
+                plt.figure("Sample Geometry")
                 plt.imshow(self.myGeometry[0])
                 plt.colorbar()
-                plt.show()
+                plt.show(block=False)
                 return   
             if self.myGeometryFunction=="CreateSampleCylindre":
                 self.myGeometry, self.myRadius=CreateSampleCylindre(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
-                print("Fylon Wire Geometry")
-                plt.figure()
+                # print("Fylon Wire Geometry")
+                plt.figure("Nylon Wire Geometry")
                 plt.imshow(self.myGeometry[0])
                 plt.colorbar()
-                plt.show()
+                plt.show(block=False)
                 return                
             if self.myGeometryFunction=="CreateSampleSpheresInTube":
                 self.myGeometry =CreateSampleSpheresInTube(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
                 return              
             if self.myGeometryFunction=="CreateSampleSphere":
                 self.myGeometry =CreateSampleSphere(self.myName,studyDimensions[0], studyDimensions[1], studyPixelSize)
-                print("Nylon Sphere Geometry")
-                plt.figure()
+                # print("Nylon Sphere Geometry")
+                plt.figure("Nylon Sphere Geometry")
                 plt.imshow(self.myGeometry)
                 plt.colorbar()
-                plt.show()
+                plt.show(block=False)
                 return       
             if self.myGeometryFunction=="generateContrastPhantom":
                 self.myGeometry=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=30)
@@ -258,7 +259,7 @@ class AnalyticalSample(Sample):
         """
         if self.myGeometry.ndim != 3:
             raise Exception("Sample Geometry has the wrong nb of dim [material, x, y]")
-        k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
+        k=getk(energy*1e3)
         delta=np.zeros(len(self.myMaterials))
         beta=np.zeros(len(self.myMaterials))
                     
@@ -292,14 +293,12 @@ class AnalyticalSample(Sample):
             disturbedPhi (2d numpy array): phase shift due to the sample.
 
         """        
-        k=2*np.pi*energy*1000*1.6e-19/(6.626e-34*2.998e8)
+        k=getk(energy*1e3)
 
         #Get delta and beta of the materials for the considered energy
         delta=np.zeros(len(self.myMaterials))
         beta=np.zeros(len(self.myMaterials))
         
-        geometryBefore=self.myGeometry
-                
         disturbedIntensity=incidentIntensity
         disturbedPhi=incidentphi
         for imat in range(len(self.myMaterials)):
@@ -313,7 +312,6 @@ class AnalyticalSample(Sample):
                 if energyData==energy:
                     beta[imat]=betaEn
 #
-            geometry=self.myGeometry[imat]
             disturbedIntensity=np.exp(-2*k*beta[imat]*self.myGeometry[imat])*disturbedIntensity
             disturbedPhi=disturbedPhi-k*delta[imat]*self.myGeometry[imat]
             

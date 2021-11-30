@@ -28,6 +28,9 @@ class Detector:
         self.myScintillatorMaterial=None
         self.myScintillatorThickness=0. #um
         self.beta=[]
+    
+    def __str__(self):
+        return f'Detector: {self.myName}\n Scintillator: {self.myScintillatorMaterial} : {self.myScintillatorThickness} um\n Dimensions: {self.myDimensions} pixels\n Pixel Size: {self.myPixelSize} um \n'
         
         
     def defineCorrectValuesDetector(self):
@@ -75,13 +78,13 @@ class Detector:
             detectedImage (2d numpy array): detected image.
 
         """
-        if effectiveSourceSize!=0:
-            sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
+        if effectiveSourceSize:
+            sigmaSource=effectiveSourceSize/(2*np.sqrt(2*np.log(2))) #from FWHM to std dev
             incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
         intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
         seed       = int(time.time()*100%(2**32-1))
         rs         = np.random.RandomState(seed)
-        if self.myPSF!=0:
+        if self.myPSF:
             detectedImage=gaussian_filter(intensityBeforeDetection, self.myPSF,mode='wrap')
         else:
             detectedImage=intensityBeforeDetection

@@ -7,9 +7,7 @@ Created on Thu Jan 16 17:37:42 2020
 """
 import numpy as np
 from xml.dom import minidom
-import random
-from InputOutput.pagailleIO import openImage, saveEdf, openSeq
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 def CreateSampleSphere(myName, dimX, dimY, pixelSize):
     print("Je cree l'echantillon!!")
@@ -53,7 +51,7 @@ def CreateSampleSpheresInTube(myName, dimX, dimY, pixelSize):
     Sample=np.zeros((3,dimX,dimY))
     
     myRadius=myRadius/pixelSize
-    patchSize2=int(np.ceil(myRadius))
+    patchSize2=int(-(myRadius//-1))
     patchSize=patchSize2*2
     spherePatch=np.zeros((patchSize,patchSize))
     
@@ -63,16 +61,16 @@ def CreateSampleSpheresInTube(myName, dimX, dimY, pixelSize):
             if dist<myRadius**2:
                 spherePatch[i,j]=2*np.sqrt(myRadius**2-(patchSize/2-j)**2-(patchSize/2-i)**2)
             
-    posX=int(np.round(dimX/2))
-    posYmuscle=int(np.round(1500/pixelSize))
-    posYcart=int(np.round(3500/pixelSize))
+    posX=round(dimX/2)
+    posYmuscle=round(1500/pixelSize)
+    posYcart=round(3500/pixelSize)
     
     
-    print('\nSample sohere geom')
-    plt.figure()
+    print('\nSample sphere geometry')
+    plt.figure('Sample sphere geometry')
     plt.imshow(spherePatch*pixelSize*1e-6)
     plt.colorbar()
-    plt.show()
+    plt.show(block=False)
 
             
     myRadius=1500 #um
@@ -91,10 +89,10 @@ def CreateSampleSpheresInTube(myName, dimX, dimY, pixelSize):
             Tube[j,:]=2*np.sqrt(myRadius**2-(dimX/2-j)**2)
     
     print("Tube")
-    plt.figure()
+    plt.figure('Tube')
     plt.imshow(Tube)
     plt.colorbar()
-    plt.show()
+    plt.show(block=False)
     
     Sample[0,posX-patchSize2:posX+patchSize2,posYmuscle-patchSize2:posYmuscle+patchSize2]=spherePatch
     Sample[1,posX-patchSize2:posX+patchSize2,posYcart-patchSize2:posYcart+patchSize2]=spherePatch
