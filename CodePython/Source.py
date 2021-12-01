@@ -9,7 +9,7 @@ Created on Wed Jan 15 17:30:05 2020
 from xml.dom import minidom
 import numpy as np
 import matplotlib.pyplot as plt
-import spekpy as sp
+from spekpy import Spek
 
 
 class Source:
@@ -23,6 +23,7 @@ class Source:
         self.exitingWindowMaterial=None
         self.myTargetMaterial='W'
         self.myEnergySampling=1
+        self.myVoltage=0
 
     def __str__(self):
         return f'Source: {self.myName}\n Size: {self.mySize} um\n Type: {self.myType}\n Spectrum: {self.mySpectrum} (KeV, 1) \n'
@@ -67,8 +68,6 @@ class Source:
             None.
 
         """
-#        print("type de source:", self.myType)
-
         # Monochromatic source case
         if self.myType=="Monochromatic":
             self.mySpectrum.append((float(self.getText(self.currentSource.getElementsByTagName("myEnergy")[0])),1))
@@ -77,64 +76,25 @@ class Source:
         # Polychromatic source case
         if self.myType=="Polychromatic":
             #get spectrum from spekpy
-            s = sp.Spek(kvp=self.myVoltage,th=12, targ=self.myTargetMaterial)
+            s = Spek(kvp=self.myVoltage, targ=self.myTargetMaterial, dk=self.myEnergySampling)
             #taking into account exiting filter?
             if self.exitingWindowMaterial is not None:
                 s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
-            spectrum=s.get_spectrum()
-            
+            self.mySpectrum = list(zip(*s.get_spectrum()))
             plt.figure('Source Filtered Spectrum')
-            plt.plot(spectrum[0],spectrum[1])
+            plt.plot(*list(zip(*self.mySpectrum)))
             plt.xlabel('Energy (keV)')
             plt.title("Source filtered spectrum")
             plt.show(block=False)
             
-            #re-sampling at source energy sampling (to get faster calculation at the end)
-            energyplot=[]
-            weightplot=[]
-            Nen=len(spectrum[0])
-            Nbin = int(-Nen/self.myEnergySampling/2//-1)
-            n=0
-            totWeight=0
-            for _ in range(Nbin-1):
-                currBin=0
-                weightBin=0
-                energyBin=0
-                while currBin<self.myEnergySampling:
-                    weightBin+=spectrum[1][n]
-                    energyBin+=spectrum[1][n]*spectrum[0][n]
-                    n+=1
-                    currBin=currBin+0.5
-                self.mySpectrum.append((energyBin/weightBin,weightBin))
-                energyplot.append(energyBin/weightBin)
-                weightplot.append(weightBin)
-                totWeight+=weightBin
-                
-            currBin=0
-            weightBin=0
-            energyBin=0
-            while n<Nen:
-                weightBin+=spectrum[1][n]
-                energyBin+=spectrum[1][n]*spectrum[0][n]
-                n+=1
-            self.mySpectrum.append((energyBin/weightBin,weightBin))
-            energyplot.append(energyBin/weightBin)
-            weightplot.append(weightBin)
-            
-            
-            k=0
-            while self.mySpectrum[0][1]/totWeight<0.001:
+            while self.mySpectrum[0][1]/s.get_flu()<0.001:
                 self.mySpectrum.pop(0)
-                energyplot.pop(0)
-                weightplot.pop(0)
-                k+=1
-                
+
             plt.figure('Resampled Spectrum')
-            plt.plot(energyplot,weightplot)
+            plt.plot(*list(zip(*self.mySpectrum)))
             plt.xlabel('Energy (keV)')
             plt.title("Resampled spectrum")
-            plt.show(block=False)
-            
+            plt.show(block=True)
             return
             
         raise ValueError("type of source not recognized")
@@ -145,7 +105,7 @@ class Source:
     
     
 if __name__ == "__main__":
-    s = sp.Spek(kvp=40,th=12, targ='W')
+    s = Spek(kvp=40,th=12, targ='W')
     s.filter('Be', 0.2)
     spectrum=s.get_spectrum()
     

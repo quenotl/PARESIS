@@ -39,7 +39,7 @@
         </myDimensions>
         <myPixelSize unit="um">75</myPixelSize>
         <myPSF unit="pixel">0</myPSF>
-        <myBinsThersholds>20,30,40</myBinsThersholds>
+        <myBinsThresholds>20,30,40</myBinsThresholds>
     </detector>
     
 </listDetectors>
