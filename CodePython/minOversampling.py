@@ -9,5 +9,5 @@ def minOversampling(sample_detector, source_sample, energy, pixel_size):
     magnification = (sample_detector+source_sample)/source_sample
     wavelength = kevToLambda(energy)
     min_dx = np.sqrt(wavelength*sample_detector/magnification)/2
-    min_oversampling = int(-((pixel_size/min_dx/magnification*1e-6)//-1))
+    min_oversampling = int(-((pixel_size/min_dx/magnification*1e-6)//-1)) #Ceiling operator
     return min_oversampling

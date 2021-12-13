@@ -34,7 +34,7 @@
         <membraneName>Mask_CuSn_From_txt</membraneName>
         <sampleName>spheres_in_tube2</sampleName>
         <sampleType>AnalyticalSample</sampleType>
-        <detectorName>flatPanelSimap</detectorName>
+        <detectorName>SPC</detectorName>
         <sourceName>simap</sourceName>
         <meanShotCount>27600</meanShotCount>
     </experiment>

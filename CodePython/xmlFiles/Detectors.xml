@@ -35,11 +35,11 @@
         <name>SPC</name>
         <myDimensions>
             <dimX>500</dimX>
-            <dimY>1500</dimY>
+            <dimY>500</dimY>
         </myDimensions>
         <myPixelSize unit="um">75</myPixelSize>
         <myPSF unit="pixel">0</myPSF>
-        <myBinsThresholds>20,30,40</myBinsThresholds>
+        <myBinsThresholds>20,30,39.75</myBinsThresholds>
     </detector>
     
 </listDetectors>

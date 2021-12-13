@@ -48,12 +48,8 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
         parameters=json.load(file)
     parameters=np.asarray(parameters) #change list to numpy array 2D [nsphere, values] 
     parameters=parameters*corrFactor  #to adapt the scale to the mean sphere radius desired
-    paramx=parameters[:,1]
-    paramy=parameters[:,0]
     parameters[:,1]+=membraneSizeinFilex/2 #place origin on top left instead of middle
     parameters[:,0]+=membraneSizeinFiley/2
-    paramx=parameters[:,1]
-    paramy=parameters[:,0]
     
     parameters0=np.copy(parameters)
     membraneSizeinFilex0=membraneSizeinFilex
@@ -85,24 +81,21 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
     Offsety=0
     offsetCorr=0
     
-    for nlayer in range(sample.myNbOfLayers):
+    for _ in range(sample.myNbOfLayers):
         # if pointNum!=0 or nmem!=0:
         maxOffsetx=membraneSizeinFilex/pixSize-dimX
         maxOffsety=membraneSizeinFiley/pixSize-dimY
         Offsetx=np.random.randint(margin2,maxOffsetx-margin2)
         Offsety=np.random.randint(margin2,maxOffsety-margin2)
-
         
         for i in range(Nsphere):
             radFloat=parameters[i,2]/pixSize
             radInt=int(radFloat)+1
-            xdata=parameters[i,0]
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
             yfloat=parameters[i,0]/pixSize-Offsety+offsetCorr
-            x=int(xfloat)
-            y=int(yfloat)
+            x=int(round(xfloat))
+            y=int(round(yfloat))
             if margin2<x<dimX+margin+margin2 and margin2<y<dimY+margin+margin2:
-                # print(x,y,radFloat)
                 for ii in range(-radInt,radInt):
                     for jj in range(-radInt,radInt):
                         dist=np.sqrt(((ii+x-xfloat))**2+((jj+y-yfloat))**2)

@@ -7,6 +7,7 @@ Created on Thu Jan 16 10:40:55 2020
 """
 
 from xml.dom import minidom
+from joblib import parallel
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import time
@@ -57,7 +58,7 @@ class Detector:
                     if node.localName=="myBinsThresholds":
                         myBinsThresholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThresholds")[0])
                         myBinsThresholdsTmp=list(myBinsThresholdsTmp.split(","))
-                        self.myBinsThresholds=[float(ele) for ele in myBinsThresholdsTmp]
+                        self.myBinsThresholds=sorted([float(ele) for ele in myBinsThresholdsTmp])
                     if node.localName=="myScintillatorMaterial":
                         self.myScintillatorMaterial=(self.getText(currentDetector.getElementsByTagName("myScintillatorMaterial")[0]))
                         self.myScintillatorThickness=float(self.getText(currentDetector.getElementsByTagName("myScintillatorThickness")[0]))
@@ -81,7 +82,7 @@ class Detector:
         if effectiveSourceSize:
             sigmaSource=effectiveSourceSize/(2*np.sqrt(2*np.log(2))) #from FWHM to std dev
             incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
-        intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
+        intensityBeforeDetection=resize(incidentWave, self.myDimensions)
         seed       = int(time.time()*100%(2**32-1))
         rs         = np.random.RandomState(seed)
         if self.myPSF:
@@ -105,7 +106,7 @@ class Detector:
         return np.array([dimX ,dimY])
     
     
-    def getBeta(self, sourceSpectrum):
+    def getBeta(self, sourceSpectrum):  #TODO xraylib and use original one
         print("Materials :", self.myScintillatorMaterial)
         pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
         for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
@@ -137,16 +138,21 @@ class Detector:
             raise ValueError("The scintillator material has not been found in delta beta tables")
     
 @njit(parallel=True)
-def resize(imageToResize,sizeX, sizeY):
+def resize(imageToResize, size):
+    sizeX, sizeY=size
     Nx, Ny=imageToResize.shape
+    print(imageToResize.shape, size)
     if Nx==sizeX and Ny==sizeY:
+    
+    # if size == list(imageToResize.shape):
+        print('HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
         return imageToResize
     
-    resizedImage=np.ones((sizeX,sizeY))
-    sampFactor=int(Nx/sizeX)
+    resizedImage=np.ones((size[0], size[1]))
+    sampFactor=int(imageToResize.shape[0]/size[0])
     
-    for x0 in prange(sizeX):
-        for y0 in prange(sizeY):
+    for x0 in prange(size[0]):
+        for y0 in prange(size[1]):
             resizedImage[x0,y0]=np.sum(imageToResize[int(x0*sampFactor):int(x0*sampFactor+sampFactor),int(y0*sampFactor):int(y0*sampFactor+sampFactor)])
             
     return resizedImage

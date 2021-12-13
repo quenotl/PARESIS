@@ -29,7 +29,7 @@ class Sample:
         self.myGeometry=[]
     
     def __str__(self):
-        return f'Sample: {self.myName}\n Type: {self.myType}\n Materials: {self.myMaterials} \n'
+        return f'Sample: {self.myName}\n Type: {self.myType}\n Materials: {self.myMaterials} \n' 
         
         
     def defineCorrectValuesSample(self):

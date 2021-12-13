@@ -51,7 +51,7 @@ def CreateSampleSpheresInTube(myName, dimX, dimY, pixelSize):
     Sample=np.zeros((3,dimX,dimY))
     
     myRadius=myRadius/pixelSize
-    patchSize2=int(-(myRadius//-1))
+    patchSize2=int(-(myRadius//-1)) #Ceiling operator
     patchSize=patchSize2*2
     spherePatch=np.zeros((patchSize,patchSize))
     
