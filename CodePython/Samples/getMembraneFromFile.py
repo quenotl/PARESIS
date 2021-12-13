@@ -34,7 +34,7 @@ def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp,
 
 
 def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
-    margin=int(10*sample.myMeanSphereRadius/pixSize)+1 #in pix
+    margin=int(-(10*sample.myMeanSphereRadius/pixSize//-1)) #in pix Ceiling operator
     margin2=int(margin/2)
     
     if sample.myMembraneFile.split('/')[-1]=='CuSn.txt':
