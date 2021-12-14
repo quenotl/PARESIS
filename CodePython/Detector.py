@@ -139,20 +139,16 @@ class Detector:
     
 @njit(parallel=True)
 def resize(imageToResize, size):
-    sizeX, sizeY=size
-    Nx, Ny=imageToResize.shape
-    print(imageToResize.shape, size)
-    if Nx==sizeX and Ny==sizeY:
-    
-    # if size == list(imageToResize.shape):
-        print('HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
+    sizeX, sizeY = size
+    Nx, Ny = imageToResize.shape
+    if Nx == sizeX and Ny == sizeY:
         return imageToResize
     
-    resizedImage=np.ones((size[0], size[1]))
-    sampFactor=int(imageToResize.shape[0]/size[0])
+    resizedImage=np.ones((sizeX, sizeY))
+    sampFactor=int(imageToResize.shape[0]/sizeX)
     
-    for x0 in prange(size[0]):
-        for y0 in prange(size[1]):
+    for x0 in prange(sizeX):
+        for y0 in prange(sizeY):
             resizedImage[x0,y0]=np.sum(imageToResize[int(x0*sampFactor):int(x0*sampFactor+sampFactor),int(y0*sampFactor):int(y0*sampFactor+sampFactor)])
             
     return resizedImage

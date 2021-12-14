@@ -29,6 +29,7 @@
         <myPSF unit="pixel">1</myPSF>
         <myScintillatorMaterial>CsI</myScintillatorMaterial>
         <myScintillatorThickness unit="um">600</myScintillatorThickness>
+        <myBinsThresholds>20,30,39.75</myBinsThresholds>
     </detector>
     
     <detector>

@@ -13,6 +13,7 @@ import json
 from InputOutput.pagailleIO import saveEdf,openImage
 import glob
 import os
+import time
 
 def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp, numPoint):
     
@@ -34,6 +35,7 @@ def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp,
 
 
 def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
+    start = time.time()
     margin=int(-(10*sample.myMeanSphereRadius/pixSize//-1)) #in pix Ceiling operator
     margin2=int(margin/2)
     
@@ -90,11 +92,11 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
         
         for i in range(Nsphere):
             radFloat=parameters[i,2]/pixSize
-            radInt=int(radFloat)+1
+            radInt=int(-(radFloat//-1))
             xfloat=parameters[i,1]/pixSize-Offsetx+offsetCorr
             yfloat=parameters[i,0]/pixSize-Offsety+offsetCorr
-            x=int(round(xfloat))
-            y=int(round(yfloat))
+            x=round(xfloat)
+            y=round(yfloat)
             if margin2<x<dimX+margin+margin2 and margin2<y<dimY+margin+margin2:
                 for ii in range(-radInt,radInt):
                     for jj in range(-radInt,radInt):
@@ -103,6 +105,8 @@ def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize,overSamp, pointNum):
                             membrane[x+ii,y+jj]+=2*np.sqrt(radFloat**2-dist**2)
 
     membrane=membrane[margin:-margin,margin:-margin]
+    stop = time.time()-start
+    print(f'IT took {stop} seconds')
     return membrane*pixSize*1e-6
 
 

@@ -27,11 +27,11 @@ if __name__ == "__main__":
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="Fil_Nylon_ID17"
+    exp_dict['experimentName']="SIMAP_SpheresInTube"
     # Output filepath to store the result images
-    exp_dict['filepath']='J:/'
+    exp_dict['filepath']='A:/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
+    exp_dict['sampleSampling']=11 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=1  #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True #TODO doesn't do anything
@@ -52,8 +52,8 @@ if __name__ == "__main__":
     experiment=Experiment(exp_dict) 
     
     for pointNum in range(exp_dict['nbExpPoints']):
-        experiment.myMembrane.myGeometry=[]
-        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
+        # experiment.myMembrane.myGeometry=[]
+        # experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
         print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
         print("\n\n*************************")
         print("Calculations point",pointNum)

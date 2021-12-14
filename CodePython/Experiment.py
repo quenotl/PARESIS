@@ -13,10 +13,11 @@ from Source import Source
 from Detector import Detector
 from Sample import AnalyticalSample
 from numpy.fft import fftshift, ifftshift, fft2, ifft2
-from numpy import pi as pi
+from numpy import pi
 from refractionFileNumba import fastRefraction
 from getk import getk
 from joblib import Parallel, delayed
+import multiprocessing as mp
 from minOversampling import minOversampling
 
 class Experiment:
@@ -242,9 +243,11 @@ class Experiment:
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThresholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThresholds):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
+            print(self.myDetector.myBinsThresholds)
             # self.myDetector.myBinsThresholds.insert(0,self.mySource.mySpectrum[0][0])
-            if self.myDetector.myBinsThresholds[-1] != self.mySource.mySpectrum[-1][0]:
-                self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
+            print(self.myDetector.myBinsThresholds)
+            # if self.myDetector.myBinsThresholds[-1] != self.mySource.mySpectrum[-1][0]:
+            #     self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
     
         effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
         # #??? possibly won't need any of this
@@ -254,29 +257,28 @@ class Experiment:
         # PropagImage=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         # detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         
-        # #INITIALIZING IMAGES
-        incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
-        # self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        # self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        # self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
 
-        # white=np.zeros((self.studyDimensions[0],self.studyDimensions[1])) #??? don't need
+
         
         #Defining total flux for normalizing spectrum
         energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
         totalFlux = sum(fluxes)
         splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
-        binned_energies = np.split(energies, splits)[:-1]
-        print(binned_energies)
+        binned_energies = np.split(energies, splits)
+        binned_fluxes = np.split(fluxes, splits)
 
+        for i,j in zip(binned_energies, binned_fluxes):
+            for k in zip(i,j):
+                print(k)
 
+    
         #####################################################################################
         #Calculating everything for each energy of the spectrum
-        def parallel_propagate(currentEnergy, flux):
+        def _parallel_propagate(currentEnergy, flux):
             print("\nCurrent Energy:", currentEnergy)
             #Taking into account source window and air attenuation of intensity
-            incidentIntensity=incidentIntensity0*flux/totalFlux
-            incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
+            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/totalFlux
+            self.incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
             if self.myDetector.myScintillatorMaterial is not None:
@@ -308,8 +310,10 @@ class Experiment:
             intensityReferenceBeforeDetection=abs(self.waveReferenceBeforeDetection)**2
             if self.myPlaque is not None:
                 intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
-            # self.imageSampleBeforeDetection = self.imageSampleBeforeDetection + intensitySampleBeforeDetection
-            # self.imageReferenceBeforeDetection = self.imageReferenceBeforeDetection + intensityReferenceBeforeDetection
+            
+            ##########
+            self.imageSampleBeforeDetection = self.imageSampleBeforeDetection + intensitySampleBeforeDetection
+            self.imageReferenceBeforeDetection = self.imageReferenceBeforeDetection + intensityReferenceBeforeDetection
             
             Intensity = np.mean(intensityReferenceBeforeDetection)
             self.meanEnergy+=currentEnergy*Intensity
@@ -321,16 +325,26 @@ class Experiment:
                 intensityPropagBeforeDetection=abs(self.wavePropagBeforeDetection)**2
                 if self.myPlaque is not None:
                     intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
-                # self.imagePropagBeforeDetection = self.imagePropagBeforeDetection + intensityPropagBeforeDetection
+                    #######
+                self.imagePropagBeforeDetection = self.imagePropagBeforeDetection + intensityPropagBeforeDetection
                 incidentIntensityWhite=incidentWave**2
                 if self.myPlaque is not None:
                     incidentIntensityWhite,_=self.myPlaque.setWaveRT(incidentWave**2,1, currentEnergy)
+                self.white = self.white+incidentIntensityWhite
 
-            return Intensity, intensitySampleBeforeDetection, intensityReferenceBeforeDetection, intensityPropagBeforeDetection, incidentIntensityWhite
-            
-        with Parallel(n_jobs=60) as parallel:
-            intensity, isbd, irbd, ipbd, iiw = list(zip(*parallel(delayed(parallel_propagate)(currentEnergy, flux) for currentEnergy
-            , flux in self.mySource.mySpectrum)))
+            return self.incidentIntensity0[-1], self.imageSampleBeforeDetection[-1], self.imageReferenceBeforeDetection[-1], self.imagePropagBeforeDetection[-1], self.white[-1]
+
+        with Parallel(n_jobs=-1 if mp.cpu_count() < 60 else 60) as parallel:
+            for en, flu in zip(binned_energies, binned_fluxes):
+        # #INITIALIZING IMAGES
+                self.incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
+                self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+                self.white=np.zeros((self.studyDimensions[0],self.studyDimensions[1])) #??? don't need
+
+                intensity, isbd, irbd, ipbd, iiw = list(zip(*parallel(delayed(_parallel_propagate)(currentEnergy, flux) for currentEnergy
+                , flux in zip(en, flu))))
 
         # if currentEnergy>self.myDetector.myBinsThresholds[ibin]-self.mySource.myEnergySampling/2:
         
@@ -365,8 +379,8 @@ class Experiment:
             return SampleImage, ReferenceImage, PropagImage, detectedWhite
 
 
-        SampleImage, ReferenceImage, PropagImage, detectedWhite = list(zip(*Parallel(n_jobs=2)(delayed(parallel_detect)(sample, reference, propagation, white) for 
-        sample, reference, propagation, white in list(zip(isbd, irbd, ipbd, iiw)))))
+        # SampleImage, ReferenceImage, PropagImage, detectedWhite = list(zip(*Parallel(n_jobs=2)(delayed(parallel_detect)(sample, reference, propagation, white) for 
+        # sample, reference, propagation, white in list(zip(isbd, irbd, ipbd, iiw)))))
         
         #DETECTION IMAGES FOR ENERGY BIN
 
