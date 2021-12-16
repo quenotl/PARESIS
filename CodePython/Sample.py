@@ -95,23 +95,27 @@ class Sample:
         """
         # print("Materials :", self.myMaterials)
         try:
-            # pathmaterials = 'Samples/DeltaBeta/Materials.csv'
-            # df = pd.read_csv(pathmaterials)
-            # df = df.set_index('Material')
-            # if not all(material in df.index.tolist() for material in self.myMaterials):
-            #     warnings.warn('Not all materials in Materials.csv. Now searching in TablesDeltaBeta.xls')
-            # for material in self.myMaterials:
-            #     beta = []
-            #     delta = []
-            #     for energy, _ in sourceSpectrum:
-            #         n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
-            #         beta.append((energy, n.imag))
-            #         delta.append((energy, 1-n.real))
-            #     self.beta.append(beta)
-            #     self.delta.append(delta)
-            pass
+            print(int('a'))
+            pathmaterials = 'Samples/DeltaBeta/Materials.csv'
+            df = pd.read_csv(pathmaterials)
+            df = df.set_index('Material')
+            if not all(material in df.index.tolist() for material in self.myMaterials):
+                warnings.warn('Not all materials in Materials.csv. Now searching in TablesDeltaBeta.xls')
+            for material in self.myMaterials:
+                beta = []
+                delta = []
+                for energy, _ in sourceSpectrum:
+                    n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
+                    beta.append((energy, n.imag))
+                    delta.append((energy, 1-n.real))
+                self.beta.append(beta)
+                self.delta.append(delta)
+
         except Exception:
+            energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
             pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
+            deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
+            # pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
             for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
                 for imat in range(len(self.myMaterials)):
                     delta=[]
@@ -149,7 +153,7 @@ class Sample:
                             self.delta.append(delta)
                             
                 a = np.shape(self.delta)[0]
-                if a<len(self.myMaterials):
+                if a != len(self.myMaterials):
                     raise ValueError("One or more materials have not been found in delta beta tables")
                 return
             print("getDeltaBeta nest pas encore implemente")

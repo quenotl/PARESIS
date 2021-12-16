@@ -264,8 +264,6 @@ class Experiment:
         global _parallel_propagate
         #Calculating everything for each energy of the spectrum
         def _parallel_propagate(args):
-            # print(args)
-            # return
             currentEnergy = args[0]
             flux = args[1]
             print("\nCurrent Energy:", currentEnergy)
@@ -339,6 +337,8 @@ class Experiment:
 
         pool = mp.Pool(processes = mp.cpu_count())
         for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+            # print(list(zip(bin_en, bin_flu)))
+            # return
             binlength = len(bin_en)
             ii = np.zeros((binlength, *self.studyDimensions))
             isbd = np.zeros((binlength, *self.studyDimensions))
@@ -352,7 +352,7 @@ class Experiment:
             sum_ipbd = np.zeros(self.studyDimensions)
             sum_iw = np.zeros(self.studyDimensions)
 
-            ii, isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.map(_parallel_propagate, zip(bin_en, bin_flu))))))
+            ii, isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.map(_parallel_propagate, list(zip(bin_en, bin_flu)))))))
             sum_ii = ii.sum(0)
             sum_isbd = isbd.sum(0)
             sum_ipbd = ipbd.sum(0)

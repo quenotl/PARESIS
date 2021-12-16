@@ -12,7 +12,7 @@ import time
 sys.path.append('CodePython/InputOutput/')
 import os
 from InputOutput.pagailleIO import saveEdf
-Multiprocessing = True
+Multiprocessing = False
 import platform
 if Multiprocessing:
     if platform.system() == 'Windows':
