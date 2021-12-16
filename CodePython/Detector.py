@@ -13,6 +13,7 @@ from scipy.ndimage.filters import gaussian_filter
 import time
 from numba import njit, prange
 import xlrd
+# from Sample import Sample TODO: inherit from sample to use getDeltaBeta
 
 class Detector:
     def __init__(self, exp_dict):
@@ -137,18 +138,18 @@ class Detector:
                     return
             raise ValueError("The scintillator material has not been found in delta beta tables")
     
-@njit(parallel=True)
-def resize(imageToResize, size):
-    sizeX, sizeY = size
-    Nx, Ny = imageToResize.shape
-    if Nx == sizeX and Ny == sizeY:
-        return imageToResize
-    
-    resizedImage=np.ones((sizeX, sizeY))
-    sampFactor=int(imageToResize.shape[0]/sizeX)
-    
-    for x0 in prange(sizeX):
-        for y0 in prange(sizeY):
-            resizedImage[x0,y0]=np.sum(imageToResize[int(x0*sampFactor):int(x0*sampFactor+sampFactor),int(y0*sampFactor):int(y0*sampFactor+sampFactor)])
-            
-    return resizedImage
+    @njit(parallel=True)
+    def resize(imageToResize, size):
+        sizeX, sizeY = size
+        Nx, Ny = imageToResize.shape
+        if Nx == sizeX and Ny == sizeY:
+            return imageToResize
+        
+        resizedImage=np.ones((sizeX, sizeY))
+        sampFactor=int(imageToResize.shape[0]/sizeX)
+        
+        for x0 in prange(sizeX):
+            for y0 in prange(sizeY):
+                resizedImage[x0,y0]=np.sum(imageToResize[int(x0*sampFactor):int(x0*sampFactor+sampFactor),int(y0*sampFactor):int(y0*sampFactor+sampFactor)])
+                
+        return resizedImage

@@ -242,9 +242,7 @@ class Experiment:
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThresholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThresholds):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
-            print(self.myDetector.myBinsThresholds)
             # self.myDetector.myBinsThresholds.insert(0,self.mySource.mySpectrum[0][0])
-            print(self.myDetector.myBinsThresholds)
             # if self.myDetector.myBinsThresholds[-1] != self.mySource.mySpectrum[-1][0]:
             #     self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
     
@@ -261,22 +259,19 @@ class Experiment:
         
         #Defining total flux for normalizing spectrum
         energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
-        totalFlux = sum(fluxes)
-        splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
-        binned_energies = np.split(energies, splits)
-        binned_fluxes = np.split(fluxes, splits)
-
-        # for i,j in zip(binned_energies, binned_fluxes):
-        #     for k in zip(i,j):
-        #         print(k)
 
         #####################################################################################
+        global _parallel_propagate
         #Calculating everything for each energy of the spectrum
-        def _parallel_propagate(currentEnergy, flux):
+        def _parallel_propagate(args):
+            # print(args)
+            # return
+            currentEnergy = args[0]
+            flux = args[1]
             print("\nCurrent Energy:", currentEnergy)
             #Taking into account source window and air attenuation of intensity
-            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/totalFlux
-            self.incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
+            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/self.mySource.totalFlux()
+            incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
             if self.myDetector.myScintillatorMaterial is not None:
@@ -310,8 +305,8 @@ class Experiment:
                 intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
             
             ##########
-            self.imageSampleBeforeDetection = self.imageSampleBeforeDetection + intensitySampleBeforeDetection
-            self.imageReferenceBeforeDetection = self.imageReferenceBeforeDetection + intensityReferenceBeforeDetection
+            # self.imageSampleBeforeDetection = self.imageSampleBeforeDetection + intensitySampleBeforeDetection
+            # self.imageReferenceBeforeDetection = self.imageReferenceBeforeDetection + intensityReferenceBeforeDetection
             
             Intensity = np.mean(intensityReferenceBeforeDetection)
             self.meanEnergy+=currentEnergy*Intensity
@@ -324,13 +319,61 @@ class Experiment:
                 if self.myPlaque is not None:
                     intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
                     #######
-                self.imagePropagBeforeDetection = self.imagePropagBeforeDetection + intensityPropagBeforeDetection
+                # self.imagePropagBeforeDetection = self.imagePropagBeforeDetection + intensityPropagBeforeDetection
                 incidentIntensityWhite=incidentWave**2
                 if self.myPlaque is not None:
                     incidentIntensityWhite,_=self.myPlaque.setWaveRT(incidentWave**2,1, currentEnergy)
-                self.white = self.white+incidentIntensityWhite
+                # self.white = self.white+incidentIntensityWhite
 
-            return self.incidentIntensity0, self.imageSampleBeforeDetection, self.imageReferenceBeforeDetection, self.imagePropagBeforeDetection, self.white
+            return incidentIntensity, intensitySampleBeforeDetection, intensityReferenceBeforeDetection, intensityPropagBeforeDetection, incidentIntensityWhite
+
+        splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
+        binned_energies = np.split(energies, splits)
+        binned_fluxes = np.split(fluxes, splits)
+
+        self.incidentIntensity = []
+        self.imageSampleBeforeDetection = []
+        self.imageReferenceBeforeDetection = []
+        self.imagePropagBeforeDetection = []
+        self.white = []
+
+        pool = mp.Pool(processes = mp.cpu_count())
+        for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+            binlength = len(bin_en)
+            ii = np.zeros((binlength, *self.studyDimensions))
+            isbd = np.zeros((binlength, *self.studyDimensions))
+            irbd = np.zeros((binlength, *self.studyDimensions))
+            ipbd = np.zeros((binlength, *self.studyDimensions))
+            iw = np.zeros((binlength, *self.studyDimensions))
+
+            sum_ii = np.zeros(self.studyDimensions)
+            sum_isbd = np.zeros(self.studyDimensions)
+            sum_irbd = np.zeros(self.studyDimensions)
+            sum_ipbd = np.zeros(self.studyDimensions)
+            sum_iw = np.zeros(self.studyDimensions)
+
+            ii, isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.map(_parallel_propagate, zip(bin_en, bin_flu))))))
+            sum_ii = ii.sum(0)
+            sum_isbd = isbd.sum(0)
+            sum_ipbd = ipbd.sum(0)
+            sum_iw = iw.sum(0)
+            self.incidentIntensity.append(sum_ii)
+            self.imageSampleBeforeDetection.append(sum_isbd)
+            self.imageReferenceBeforeDetection.append(sum_irbd)
+            self.imagePropagBeforeDetection.append(sum_ipbd)
+            self.white.append(sum_iw)
+        return 
+
+        pool = mp.Pool(processes = mp.cpu_count())
+        outputArr = np.zeros((num_iters, 512, 512))
+        sumArr = np.zeros((512, 512))
+        outputArr2 = np.zeros((num_iters, 512, 512))
+        sumArr2 = np.zeros((512, 512))
+        outputArr, outputArr2 = np.array(list(zip(*np.array(pool.map(computation, range(num_iters))))))
+        sumArr = outputArr.sum(0)
+        sumArr2 = outputArr2.sum(0)
+        pool.close()
+        # return sumArr, sumArr2
 
         with Parallel(n_jobs=-1 if mp.cpu_count() < 60 else 60) as parallel:
             for en, flu in zip(binned_energies, binned_fluxes):
@@ -435,9 +478,6 @@ class Experiment:
         detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         
         
-        #Defining total flux for normalizing spectrum
-        totalFlux = sum([flux for _, flux in self.mySource.mySpectrum])
-         
         #INITIALIZING IMAGES
         incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
         incidentPhi=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
@@ -451,7 +491,7 @@ class Experiment:
         for currentEnergy, flux in self.mySource.mySpectrum: #TODO enumerate is wrong
             print("\nCurrent Energy: %gkev" %currentEnergy)
             
-            incidentIntensity=incidentIntensity0*flux/totalFlux
+            incidentIntensity=incidentIntensity0*flux/self.mySource.totalFlux()
             incidentIntensity,_ =self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file

@@ -12,8 +12,15 @@ import time
 sys.path.append('CodePython/InputOutput/')
 import os
 from InputOutput.pagailleIO import saveEdf
-from Experiment import Experiment
-# from ExperimentMultiprocess import Experiment
+Multiprocessing = True
+import platform
+if Multiprocessing:
+    if platform.system() == 'Windows':
+        from Experiment_joblib import Experiment
+    else:
+        from Experiment_multiprocessing import Experiment
+else:
+    from Experiment import Experiment
 
 
 if __name__ == "__main__":
@@ -52,8 +59,8 @@ if __name__ == "__main__":
     experiment=Experiment(exp_dict) 
     
     for pointNum in range(exp_dict['nbExpPoints']):
-        # experiment.myMembrane.myGeometry=[]
-        # experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
+        experiment.myMembrane.myGeometry=[]
+        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
         print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
         print("\n\n*************************")
         print("Calculations point",pointNum)

@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from Samples.createSphere import CreateSampleSphere, CreateSampleSpheresInTube
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import pandas as pd
-import xraylib
+# import xraylib
 from getk import getk
 import warnings
 
@@ -95,25 +95,23 @@ class Sample:
         """
         # print("Materials :", self.myMaterials)
         try:
-            pathmaterials = 'Samples/DeltaBeta/Materials.csv'
-            df = pd.read_csv(pathmaterials)
-            df = df.set_index('Material')
-            if not all(material in df.index.tolist() for material in self.myMaterials):
-                warnings.warn('Not all materials in Materials.csv. Now searching in TablesDeltaBeta.xls')
-            for material in self.myMaterials:
-                beta = []
-                delta = []
-                for energy, _ in sourceSpectrum:
-                    n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
-                    beta.append((energy, n.imag))
-                    delta.append((energy, 1-n.real))
-                self.beta.append(beta)
-                self.delta.append(delta)
+            # pathmaterials = 'Samples/DeltaBeta/Materials.csv'
+            # df = pd.read_csv(pathmaterials)
+            # df = df.set_index('Material')
+            # if not all(material in df.index.tolist() for material in self.myMaterials):
+            #     warnings.warn('Not all materials in Materials.csv. Now searching in TablesDeltaBeta.xls')
+            # for material in self.myMaterials:
+            #     beta = []
+            #     delta = []
+            #     for energy, _ in sourceSpectrum:
+            #         n = xraylib.Refractive_Index(df['Formula'][material], energy, df['Density'][material])
+            #         beta.append((energy, n.imag))
+            #         delta.append((energy, 1-n.real))
+            #     self.beta.append(beta)
+            #     self.delta.append(delta)
+            pass
         except Exception:
-            energyRange=[sourceSpectrum[0][0],sourceSpectrum[0][-1]]
             pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
-            deltaBetaDoc=xlrd.open_workbook(pathTablesDeltaBeta)
-            i=0
             for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
                 for imat in range(len(self.myMaterials)):
                     delta=[]
@@ -146,7 +144,6 @@ class Sample:
                                 betaInterp=abs(nextCellValue-energy*1e3)/step*currentCellBeta+abs(currentCellValue-energy*1e3)/step*nextCellBeta
                                 delta.append((energy,deltaInterp))
                                 beta.append((energy,betaInterp))
-                                
                                 
                             self.beta.append(beta)
                             self.delta.append(delta)

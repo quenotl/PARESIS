@@ -59,6 +59,9 @@ class Source:
                 return
             
         raise ValueError("Source not found in the xml file")
+    
+    def totalFlux(self):
+        return sum([flux for _, flux in self.mySpectrum])
             
     def setMySpectrum(self):
         """

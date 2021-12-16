@@ -260,7 +260,7 @@ class Experiment:
         self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
         self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
         self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
+        self.white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
         
         
         #Defining total flux for normalizing spectrum
@@ -321,7 +321,7 @@ class Experiment:
                 incidentIntensityWhite=incidentWave**2
                 if self.myPlaque is not None:
                     incidentIntensityWhite,_=self.myPlaque.setWaveRT(incidentWave**2,1, currentEnergy)
-                white+=incidentIntensityWhite
+                self.white+=incidentIntensityWhite
                 
                 
             if currentEnergy>self.myDetector.myBinsThresholds[ibin]-self.mySource.myEnergySampling/2:
