@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from Samples.createSphere import CreateSampleSphere, CreateSampleSpheresInTube
 from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
 import pandas as pd
-# import xraylib
+import xraylib
 from getk import getk
 import warnings
 
@@ -95,7 +95,6 @@ class Sample:
         """
         # print("Materials :", self.myMaterials)
         try:
-            print(int('a'))
             pathmaterials = 'Samples/DeltaBeta/Materials.csv'
             df = pd.read_csv(pathmaterials)
             df = df.set_index('Material')

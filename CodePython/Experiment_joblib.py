@@ -262,7 +262,6 @@ class Experiment:
         
         #Defining total flux for normalizing spectrum
         energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
-        totalFlux = sum(fluxes)
         splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
         binned_energies = np.split(energies, splits)
         binned_fluxes = np.split(fluxes, splits)
@@ -276,7 +275,7 @@ class Experiment:
         def _parallel_propagate(currentEnergy, flux):
             print("\nCurrent Energy:", currentEnergy)
             #Taking into account source window and air attenuation of intensity
-            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/totalFlux
+            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/self.mySource.totalFlux()
             self.incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
@@ -436,9 +435,6 @@ class Experiment:
         detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
         
         
-        #Defining total flux for normalizing spectrum
-        totalFlux = sum([flux for _, flux in self.mySource.mySpectrum])
-         
         #INITIALIZING IMAGES
         incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
         incidentPhi=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
@@ -449,10 +445,10 @@ class Experiment:
             
         #Calculating everything for each energy of the spectrum
         ibin = 0
-        for currentEnergy, flux in self.mySource.mySpectrum: #TODO enumerate is wrong
+        for currentEnergy, flux in self.mySource.mySpectrum:
             print("\nCurrent Energy: %gkev" %currentEnergy)
             
-            incidentIntensity=incidentIntensity0*flux/totalFlux
+            incidentIntensity=incidentIntensity0*flux/self.mySource.totalFlux()
             incidentIntensity,_ =self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
