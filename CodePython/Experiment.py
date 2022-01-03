@@ -77,6 +77,8 @@ class Experiment:
             self.myPlaque.getDeltaBeta(self.mySource.mySpectrum)
             self.myPlaque.getMyGeometry(self.studyDimensions,self.studyPixelSize,self.sampling)
         self.mySampleofInterest.getDeltaBeta(self.mySource.mySpectrum)
+
+
         self.mySampleofInterest.getMyGeometry(self.studyDimensions,self.studyPixelSize,self.sampling)
 
         self.myMembrane.getDeltaBeta(self.mySource.mySpectrum)
@@ -344,7 +346,7 @@ class Experiment:
                     
                 #DETECTION IMAGES FOR ENERGY BIN
                 print("Detection sample image")
-                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
+                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize,self.sampling)
                 print("Detection reference image")
                 ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
                 if pointNum==0:
@@ -356,7 +358,6 @@ class Experiment:
                 self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
                 self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
                 white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                
                 ibin+=1
             
         self.meanEnergy=self.meanEnergy/sumIntensity
@@ -468,16 +469,16 @@ class Experiment:
             
                 effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
         
-                #DETECTION IMAGES FOR ENERGY BIN
+                ###########################################DETECTION IMAGES FOR ENERGY BIN
                 print("Detection sample image")
-                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
+                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize,self.sampling)
                 print("Detection reference image")
-                ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
+                ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize,self.sampling)
                 if pointNum==0:
                     self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
                     print("Detection propagation image")
-                    PropagImage[ibin]=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
-                detectedWhite[ibin]=self.myDetector.detection(white,effectiveSourceSize)
+                    PropagImage[ibin]=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize,self.sampling)
+                detectedWhite[ibin]=self.myDetector.detection(white,effectiveSourceSize,self.sampling)
                 
                 self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
                 self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
@@ -575,7 +576,3 @@ class Experiment:
         f.close()
         
         return
-    
-
-    
-        
