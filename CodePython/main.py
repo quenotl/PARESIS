@@ -32,72 +32,51 @@ if __name__ == "__main__":
     # Output filepath to store the result images
     exp_dict['filepath']='../Results/SIMAP_SpheresInTube/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=10 # MUST BE AN INTEGER
-    exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
+    exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
-    exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
+    exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
     now=datetime.datetime.now()
     exp_dict['expID']=now.strftime("%Y%m%d-%H%M%S") #define experiment ID
     
-    SampleImage=[]
-    ReferenceImage=[]
     PropagImage=[]
-    AbsImage=[]
-    SubImage=[]
     Geometry=[]
     
     experiment=Experiment(exp_dict) 
     
-    for pointNum in range(exp_dict['nbExpPoints']):
-        experiment.myMembrane.myGeometry=[]
-        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
-        print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
-        print("\n\n*************************")
-        print("Calculations point",pointNum)
-        if exp_dict['simulation_type']=="Fresnel":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages(pointNum)
-        elif exp_dict['simulation_type']=="RayT":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy=experiment.computeSampleAndReferenceImagesRT(pointNum)
+    print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
+    print("\n\n*************************")
+    if exp_dict['simulation_type']=="Fresnel":
+        PropagImageTmp, White=experiment.computeSampleAndReferenceImages()
+    elif exp_dict['simulation_type']=="RayT":
+        PropagImageTmp, White=experiment.computeSampleAndReferenceImagesRT()
+    else:
+        raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
+    Nbin=len(PropagImageTmp)
+    
+    expPathEn=[]
+    if exp_dict['simulation_type']=="Fresnel":
+        expImagesFilePath=exp_dict['filepath']+'Fresnel_'+str(exp_dict['expID'])+'/'
+    if exp_dict['simulation_type']=="RayT":
+        expImagesFilePath=exp_dict['filepath']+'RayTracing_'+str(exp_dict['expID'])+'/'
+    os.mkdir(expImagesFilePath)
+    thresholds=experiment.myDetector.myBinsThersholds.copy()
+    thresholds.insert(0,experiment.mySource.mySpectrum[0][0])
+    for ibin in range(Nbin):
+        binstart='%2.2d'%thresholds[ibin]
+        binend='%2.2d'%thresholds[ibin+1]
+        expPathEn.append(f'{expImagesFilePath}{binstart}_{binend}kev/')
+        if len(thresholds)-1==1:
+            expPathEn=[expImagesFilePath]
         else:
-            raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
-        Nbin=len(SampleImageTmp)
-        
-        if pointNum==0:
-            expPathEn=[]
-            if exp_dict['simulation_type']=="Fresnel":
-                expImagesFilePath=exp_dict['filepath']+'Fresnel_'+str(exp_dict['expID'])+'/'
-            if exp_dict['simulation_type']=="RayT":
-                expImagesFilePath=exp_dict['filepath']+'RayTracing_'+str(exp_dict['expID'])+'/'
-            os.mkdir(expImagesFilePath)
-            os.mkdir(expImagesFilePath+'membraneThickness/')
-            thresholds=experiment.myDetector.myBinsThersholds.copy()
-            thresholds.insert(0,experiment.mySource.mySpectrum[0][0])
-            for ibin in range(Nbin):
-                binstart='%2.2d'%thresholds[ibin]
-                binend='%2.2d'%thresholds[ibin+1]
-                expPathEn.append(f'{expImagesFilePath}{binstart}_{binend}kev/')
-                if len(thresholds)-1==1:
-                    expPathEn=[expImagesFilePath]
-                else:
-                    os.mkdir(expPathEn[ibin])
-                os.mkdir(expPathEn[ibin]+'ref/')
-                os.mkdir(expPathEn[ibin]+'sample/')
-                os.mkdir(expPathEn[ibin]+'propag/')
-            
-        txtPoint = '%2.2d' % pointNum
-        saveEdf(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+'.edf')
-            
-        for ibin in range(Nbin):
-            saveEdf(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
-            saveEdf(ReferenceImageTmp[ibin], expPathEn[ibin]+'ref/ReferenceImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
-            
-            if pointNum==0:
-                saveEdf(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+'.edf')
-                saveEdf(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+'.edf')
+            os.mkdir(expPathEn[ibin])
+                
+    for ibin in range(Nbin):
+        saveEdf(PropagImageTmp[ibin], expPathEn[ibin]+'PropagImage_'+str(exp_dict['expID'])+'.edf')
+        saveEdf(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'.edf')
 
     experiment.saveAllParameters(time0,exp_dict)
     
