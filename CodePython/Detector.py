@@ -8,7 +8,8 @@ Created on Thu Jan 16 10:40:55 2020
 
 from xml.dom import minidom
 import numpy as np
-from scipy.ndimage.filters import gaussian_filter, median_filter
+from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import convolve
 from matplotlib import pyplot as plt
 import time
 from numba import jit
@@ -64,7 +65,8 @@ class Detector:
         raise ValueError("detector not found in xml file")
             
             
-    def detection(self,incidentWave,effectiveSourceSize):
+    def detection(self,incidentWave,effectiveSourceSize,samplingFactor):
+        
         """
         Adds source and PSF blurrings, resamples to detector pixel size and add shot noise
 
@@ -76,9 +78,12 @@ class Detector:
             detectedImage (2d numpy array): detected image.
 
         """
+        sampledpixeledsize=self.myPixelSize/samplingFactor
+        weights=self.source_geometry(5e-4,50e-6,sampledpixeledsize)
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
-            incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
+            # incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
+            incidentWave=convolve(incidentWave, weights, mode='nearest')
         intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
         seed       = int(np.floor(time.time()*100%(2**32-1)))
         rs         = np.random.RandomState(seed)
@@ -134,6 +139,37 @@ class Detector:
                     return
             raise ValueError("The scintillator material has not been found in delta beta tables")
     
+    def source_geometry(self, distance, sigma,pixel_size):
+    
+            pixel_size=pixel_size*1e-6 
+            x = 5*sigma/pixel_size
+            y = distance/pixel_size+5*sigma/pixel_size
+            y0, x0=y/2-distance/pixel_size/2, x/2
+            y1, x1=y/2+distance/pixel_size/2, x/2
+        
+            x=np.arange(x)
+            y=np.arange(y)
+            sigma /= pixel_size
+    
+            gx = np.exp(-(x-x0)**2/(2*sigma**2))
+            gx1 = np.exp(-(x-x1)**2/(2*sigma**2))
+
+            gy = np.exp(-(y-y0)**2/(2*sigma**2))
+            gy1 = np.exp(-(y-y1)**2/(2*sigma**2))
+
+            g = np.outer(gx, gy)
+            g1 = np.outer(gx1, gy1)
+            g2=(g+g1)/2
+            g=g2/np.sum(g2)
+            plt.figure()
+            plt.imshow(g2)
+            plt.colorbar()
+            plt.show()
+            return g2
+
+
+      
+    
 @jit(nopython=True)
 def resize(imageToResize,sizeX, sizeY):
     Nx, Ny=imageToResize.shape
@@ -148,3 +184,9 @@ def resize(imageToResize,sizeX, sizeY):
             resizedImage[x0,y0]=np.sum(imageToResize[int(np.floor(x0*sampFactor)):int(np.floor(x0*sampFactor+sampFactor)),int(np.floor(y0*sampFactor)):int(np.floor(y0*sampFactor+sampFactor))])
             
     return resizedImage
+
+
+    
+
+
+
