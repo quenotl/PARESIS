@@ -9,6 +9,7 @@ Created on Thu Jan 16 10:40:55 2020
 from xml.dom import minidom
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter, median_filter
+from scipy.signal import fftconvolve
 from matplotlib import pyplot as plt
 import time
 from numba import jit
@@ -78,12 +79,14 @@ class Detector:
         """
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
-            incidentWave=gaussian_filter(incidentWave, sigmaSource,mode='wrap')
+            gaussian=create_gaussian_shape(sigmaSource)
+            incidentWave=fftconvolve(incidentWave, gaussian,mode='same')
         intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
         seed       = int(np.floor(time.time()*100%(2**32-1)))
         rs         = np.random.RandomState(seed)
         if self.myPSF!=0:
-            detectedImage=gaussian_filter(intensityBeforeDetection, self.myPSF,mode='wrap')
+            gaussian=create_gaussian_shape(self.myPSF)
+            detectedImage=fftconvolve(intensityBeforeDetection, gaussian,mode='same')
         else:
             detectedImage=intensityBeforeDetection
         
@@ -148,3 +151,11 @@ def resize(imageToResize,sizeX, sizeY):
             resizedImage[x0,y0]=np.sum(imageToResize[int(np.floor(x0*sampFactor)):int(np.floor(x0*sampFactor+sampFactor)),int(np.floor(y0*sampFactor)):int(np.floor(y0*sampFactor+sampFactor))])
             
     return resizedImage
+
+
+def create_gaussian_shape(sigma):
+    size=round(sigma*5)
+    Qx, Qy = np.meshgrid((np.arange(0, 2*size) - np.floor(size) - 1), (np.arange(0, 2*size) - np.floor(size) - 1)) #frequency ranges of the images in fqcy space
+
+    g = np.exp(-(((Qx)**2) / 2. / sigma**2 + ((Qy)**2) / 2. / sigma**2))
+    return g/np.sum(g)
