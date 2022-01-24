@@ -11,7 +11,7 @@ import datetime
 import time
 sys.path.append('CodePython/InputOutput/')
 import os
-from InputOutput.pagailleIO import saveEdf
+from InputOutput.pagailleIO import save_image
 from Experiment import Experiment
 # from ExperimentMultiprocess import Experiment
 import numpy as np
@@ -32,11 +32,12 @@ if __name__ == "__main__":
     # Output filepath to store the result images
     exp_dict['filepath']='../Results/SIMAP_SpheresInTube/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=10 # MUST BE AN INTEGER
+    exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
-    exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
+    saving_format='.tif' #.tif or .edf
+    exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
@@ -89,15 +90,15 @@ if __name__ == "__main__":
                 os.mkdir(expPathEn[ibin]+'propag/')
             
         txtPoint = '%2.2d' % pointNum
-        saveEdf(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+'.edf')
+        save_image(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+saving_format)
             
         for ibin in range(Nbin):
-            saveEdf(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
-            saveEdf(ReferenceImageTmp[ibin], expPathEn[ibin]+'ref/ReferenceImage_'+str(exp_dict['expID'])+'_'+txtPoint+'.edf')
+            save_image(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+saving_format)
+            save_image(ReferenceImageTmp[ibin], expPathEn[ibin]+'ref/ReferenceImage_'+str(exp_dict['expID'])+'_'+txtPoint+saving_format)
             
             if pointNum==0:
-                saveEdf(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+'.edf')
-                saveEdf(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+'.edf')
+                save_image(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+saving_format)
+                save_image(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+saving_format)
 
     experiment.saveAllParameters(time0,exp_dict)
     
