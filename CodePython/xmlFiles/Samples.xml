@@ -7,10 +7,10 @@
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
         <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
-        <myPMMAThickness unit="um">4000</myPMMAThickness>
+        <myPMMAThickness unit="um">6000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
-        <myMeanSphereRadius>15</myMeanSphereRadius>
-        <myNbOfLayers>2</myNbOfLayers>
+        <myMeanSphereRadius>50</myMeanSphereRadius>
+        <myNbOfLayers>3</myNbOfLayers>
     </sample>
     
     <sample>
@@ -19,8 +19,8 @@
         <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
         <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
-        <myMaterials>CuSn,PMMA</myMaterials>
-        <myMeanSphereRadius>5</myMeanSphereRadius>
+        <myMaterials>Cu,PMMA</myMaterials>
+        <myMeanSphereRadius>15</myMeanSphereRadius>
         <myNbOfLayers>2</myNbOfLayers>
     </sample>
     
@@ -39,7 +39,7 @@
         <name>Mask_CuSn_From_edf</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn_dim500x1500_oversamp2_margin10_radius30</myMembraneFile>
+        <myMembraneFile>Samples/Membranes/CuSn_dim300x400_oversamp2_margin0_radius25</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>Fe,PMMA</myMaterials>
     </sample>
@@ -50,8 +50,8 @@
         <name>filNylon</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleCylindre</myGeometryFunction>
-        <myRadius unit="um">100</myRadius>
-        <myOrientation unit="degree">41</myOrientation> 
+        <myRadius unit="um">700</myRadius>
+        <myOrientation unit="degree">30</myOrientation>
         <myMaterials>Nylon</myMaterials>
     </sample>
     
@@ -59,15 +59,30 @@
         <name>PMMA_sphere</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleSphere</myGeometryFunction>
-        <myRadius unit="um">100</myRadius>
+        <myRadius unit="um">1000</myRadius>
         <myMaterials>PMMA</myMaterials>
     </sample>
     
     <sample>
-        <name>spheres_in_tube</name>
+        <name>spheres_in_cylinder</name>
         <myType>sample_of_interest</myType>
-        <myGeometryFunction>CreateSampleSpheresInTube</myGeometryFunction>
+        <myGeometryFunction>CreateSampleSpheresInCylinder</myGeometryFunction>
         <myMaterials>Muscle,Cartilage,Solid Water</myMaterials>
+    </sample>
+    
+    <sample>
+        <name>your_own_geometry</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>CreateYourSampleGeometry</myGeometryFunction>
+        <myMaterials>Muscle</myMaterials>
+    </sample>
+    
+    
+    <sample>
+        <name>spheres_in_parallelepiped</name>
+        <myType>sample_of_interest</myType>
+        <myGeometryFunction>CreateSampleSpheresInParallelepiped</myGeometryFunction>
+        <myMaterials>Muscle,Lung,Solid Water</myMaterials>
     </sample>
     
     <sample>
@@ -88,7 +103,7 @@
     <!--ADDITIONNAL ELEMENTS-->
     
     <sample>
-        <name>C_plaque</name>
+        <name>C_plate</name>
         <myType>thin_film</myType>
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
         <myMaterials>CarbonFiber</myMaterials>

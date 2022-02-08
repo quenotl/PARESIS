@@ -11,6 +11,7 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter, median_filter
 from scipy.signal import fftconvolve
 from matplotlib import pyplot as plt
+from getk import getk
 import time
 from numba import jit
 import xlrd
@@ -20,15 +21,15 @@ class Detector:
         self.xmlDetectorFileName="xmlFiles/Detectors.xml"
         self.xmldocDetector = minidom.parse(self.xmlDetectorFileName)
         self.myName=""
-        self.myDimensions=(0,0)
-        self.myPixelSize=0. #en um
-        self.myPSF=0. #en pixel
-        self.myEfficiencyLimit=100. #en kev
-        self.margins=exp_dict['margin']
-        self.myEnergyLimit=200 #No longer useful?
-        self.myBinsThersholds=[] #keX
-        self.myScintillatorMaterial=None
-        self.myScintillatorThickness=0. #um
+        self.det_param={}
+        self.det_param["myDimensions"]=(0,0)
+        self.det_param["myPixelSize"]=0. #en um
+        self.det_param["myPSF"]=0. #en pixel
+        self.det_param["myBinsThersholds"]=[] #keV
+        self.det_param["myScintillatorMaterial"]=None
+        self.det_param["myScintillatorThickness"]=0. #um
+        self.det_param["photonCounting"]=True
+        self.mySpectralEfficiency=[]
         self.beta=[]
         
         
@@ -46,26 +47,28 @@ class Detector:
         for currentDetector in self.xmldocDetector.documentElement.getElementsByTagName("detector"):
             correctDetector = self.getText(currentDetector.getElementsByTagName("name")[0])
             if correctDetector == self.myName:
-                self.myDimensions=self.getMyDimensions(currentDetector)
-                self.myPixelSize=float(self.getText(currentDetector.getElementsByTagName("myPixelSize")[0]))
-                self.myPSF=float(self.getText(currentDetector.getElementsByTagName("myPSF")[0]))
+                self.det_param["myDimensions"]=self.getMyDimensions(currentDetector)
+                self.det_param["myPixelSize"]=float(self.getText(currentDetector.getElementsByTagName("myPixelSize")[0]))
+                self.det_param["myPSF"]=float(self.getText(currentDetector.getElementsByTagName("myPSF")[0]))
                 
                 for node in currentDetector.childNodes:
                     if node.localName=="myEnergyLimit":
                         self.myEnergyLimit=float(self.getText(currentDetector.getElementsByTagName("myEnergyLimit")[0]))
+                    if node.localName=="photonCounting":
+                        self.det_param["photonCounting"]=bool(self.getText(currentDetector.getElementsByTagName("photonCounting")[0]))
                     if node.localName=="myBinsThersholds":
                         myBinsThersholdsTmp=self.getText(currentDetector.getElementsByTagName("myBinsThersholds")[0])
                         myBinsThersholdsTmp=list(myBinsThersholdsTmp.split(","))
-                        self.myBinsThersholds=[float(ele) for ele in myBinsThersholdsTmp]
+                        self.det_param["myBinsThersholds"]=[float(ele) for ele in myBinsThersholdsTmp]
                     if node.localName=="myScintillatorMaterial":
-                        self.myScintillatorMaterial=(self.getText(currentDetector.getElementsByTagName("myScintillatorMaterial")[0]))
-                        self.myScintillatorThickness=float(self.getText(currentDetector.getElementsByTagName("myScintillatorThickness")[0]))
+                        self.det_param["myScintillatorMaterial"]=(self.getText(currentDetector.getElementsByTagName("myScintillatorMaterial")[0]))
+                        self.det_param["myScintillatorThickness"]=float(self.getText(currentDetector.getElementsByTagName("myScintillatorThickness")[0]))
                 return
             
         raise ValueError("detector not found in xml file")
             
             
-    def detection(self,incidentWave,effectiveSourceSize):
+    def detection(self,incidentWave,effectiveSourceSize, exp_param):
         """
         Adds source and PSF blurrings, resamples to detector pixel size and add shot noise
 
@@ -77,23 +80,34 @@ class Detector:
             detectedImage (2d numpy array): detected image.
 
         """
+        #Add margin to avoid edges effect when convolving with PSF and source blurring
+        margins=15
+        incidentWave=np.pad(incidentWave, margins*exp_param['overSampling'], mode='reflect')
+
+        # convolve with source blurring
         if effectiveSourceSize!=0:
             sigmaSource=effectiveSourceSize/2.355 #from FWHM to std dev
             gaussian=create_gaussian_shape(sigmaSource)
             incidentWave=fftconvolve(incidentWave, gaussian,mode='same')
-        intensityBeforeDetection=resize(incidentWave, self.myDimensions[0],self.myDimensions[1])
-        seed       = int(np.floor(time.time()*100%(2**32-1)))
-        rs         = np.random.RandomState(seed)
-        if self.myPSF!=0:
-            gaussian=create_gaussian_shape(self.myPSF)
+            
+        # incidentWave[incidentWave<0]=0
+        # reoverSampling at detector pixel size
+        intensityBeforeDetection=resize(incidentWave, self.det_param["myDimensions"][0]+margins*2,self.det_param["myDimensions"][1]+margins*2)
+        
+        # blurring with detector PSF
+        if self.det_param["myPSF"]!=0:
+            gaussian=create_gaussian_shape(self.det_param["myPSF"])
             detectedImage=fftconvolve(intensityBeforeDetection, gaussian,mode='same')
         else:
             detectedImage=intensityBeforeDetection
-        
+            
+        # adding shot noise
+        seed = int(np.floor(time.time()*100%(2**32-1))) # no idea why this one is so complicated ... 
+        rs = np.random.RandomState(seed)
         detectedImage = rs.poisson((detectedImage))
-
-        detectedImage=detectedImage[self.margins:self.myDimensions[0]-self.margins,self.margins:self.myDimensions[1]-self.margins]
         
+        #Remove margins
+        detectedImage=detectedImage[margins:self.det_param["myDimensions"][0]+margins,margins:self.det_param["myDimensions"][1]+margins]
         return detectedImage
         
     
@@ -101,20 +115,20 @@ class Detector:
         return node.childNodes[0].nodeValue
     
     def getMyDimensions(self,node):
-        dimX=int(self.getText(node.getElementsByTagName("dimX")[0]))+self.margins*2
-        dimY=int(self.getText(node.getElementsByTagName("dimY")[0]))+self.margins*2
+        dimX=int(self.getText(node.getElementsByTagName("dimX")[0]))
+        dimY=int(self.getText(node.getElementsByTagName("dimY")[0]))
         return np.array([dimX ,dimY])
     
     
     def getBeta(self, sourceSpectrum):
-        print("Materials :", self.myScintillatorMaterial)
+        # print("Materials :", self.det_param["myScintillatorMaterial"])
         pathTablesDeltaBeta ='Samples/DeltaBeta/TablesDeltaBeta.xls'
         for sh in xlrd.open_workbook(pathTablesDeltaBeta).sheets():
             for col in range(sh.ncols):
                 row=0
                 myCell = sh.cell(row, col)
 #                    print("\n\n Sample materials : ",self.myMaterials[imat])
-                if myCell.value == self.myScintillatorMaterial:
+                if myCell.value == self.det_param["myScintillatorMaterial"]:
                     row=row+3
                     for energy,_ in sourceSpectrum:
                         currentCellValue=sh.cell(row,col).value
@@ -136,6 +150,26 @@ class Detector:
                         
                     return
             raise ValueError("The scintillator material has not been found in delta beta tables")
+            
+            
+    def getSpectralEfficiency(self):
+        i=0
+        plotEff=[]
+        plotEn=[]
+        for energyData, betaEn in self.beta:
+            k=getk(energyData*1000)
+            currEfficiency=1-np.exp(-2*k*self.det_param["myScintillatorThickness"]*1e-6*betaEn)
+            self.mySpectralEfficiency.append((energyData, currEfficiency))
+            plotEff.append(currEfficiency)
+            plotEn.append(energyData)
+            i+=1
+        plt.figure()
+        plt.plot(plotEn,plotEff)
+        plt.xlabel('Energy (keV)')
+        plt.ylabel('Attenuation')
+        plt.title("Detector scintillator attenuation power")
+        plt.show()
+                
     
 @jit(nopython=True)
 def resize(imageToResize,sizeX, sizeY):
@@ -154,8 +188,12 @@ def resize(imageToResize,sizeX, sizeY):
 
 
 def create_gaussian_shape(sigma):
-    size=round(sigma*5)
-    Qx, Qy = np.meshgrid((np.arange(0, 2*size) - np.floor(size) - 1), (np.arange(0, 2*size) - np.floor(size) - 1)) #frequency ranges of the images in fqcy space
+    dim=round(sigma*3)*2+1
+    
+    Qx, Qy = np.meshgrid((np.arange(0, dim) - np.floor(dim / 2) ), (np.arange(0, dim) - np.floor(dim / 2)) ) #frequency ranges of the images in fqcy space
+
+    #sigmaY = sig_scale
 
     g = np.exp(-(((Qx)**2) / 2. / sigma**2 + ((Qy)**2) / 2. / sigma**2))
+
     return g/np.sum(g)

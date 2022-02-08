@@ -14,19 +14,16 @@ from matplotlib import pyplot as plt
 from scipy.ndimage.filters import gaussian_filter, median_filter
 import spekpy as sp
 
-
-
 class Source:
     def __init__(self):
         self.xmlSourcesFileName="xmlFiles/Sources.xml"
         self.xmldocSources = minidom.parse(self.xmlSourcesFileName)
         self.myName=""
         self.mySpectrum=[]
-        self.mySize=0.
-        self.myType=None
-        self.exitingWindowMaterial=None
-        self.myTargetMaterial='W'
-        self.myEnergySampling=1
+        self.source_dict={}
+        self.source_dict["mySize"]=0.
+        self.source_dict["myEnergySampling"]=1
+        self.source_dict["myType"]=None
         
     def defineCorrectValuesSource(self):
         """
@@ -43,24 +40,27 @@ class Source:
             correctSource = self.getText(currentSource.getElementsByTagName("name")[0])
             if correctSource == self.myName:
                 self.currentSource=currentSource
-                self.mySize=float(self.getText(currentSource.getElementsByTagName("mySize")[0]))
-                self.myType=self.getText(currentSource.getElementsByTagName("myType")[0])
-                if self.myType=="Polychromatic":
-                    self.myEnergySampling=float(self.getText(currentSource.getElementsByTagName("myEnergySampling")[0]))
-                    self.myVoltage=float(self.getText(currentSource.getElementsByTagName("sourceVoltage")[0]))
+                self.source_dict["mySize"]=float(self.getText(currentSource.getElementsByTagName("mySize")[0]))
+                self.source_dict["myType"]=self.getText(currentSource.getElementsByTagName("myType")[0])
+                if self.source_dict["myType"]=="Polychromatic":
+                    self.source_dict["filterMaterial"]=None
+                    self.source_dict["myTargetMaterial"]='W'
+                    self.source_dict["myEnergySampling"]=float(self.getText(currentSource.getElementsByTagName("myEnergySampling")[0]))
+                    self.source_dict["myVoltage"]=float(self.getText(currentSource.getElementsByTagName("sourceVoltage")[0]))
                     for node in currentSource.childNodes:
-                        if node.localName=="exitingWindowMaterial":
-                            self.exitingWindowMaterial=self.getText(currentSource.getElementsByTagName("exitingWindowMaterial")[0])
-                            self.exitingWindowThickness=float(self.getText(currentSource.getElementsByTagName("exitingWindowThickness")[0]))                            
+                        if node.localName=="filterMaterial":
+                            self.source_dict["filterMaterial"]=self.getText(currentSource.getElementsByTagName("filterMaterial")[0])
+                            self.source_dict["filterThickness"]=float(self.getText(currentSource.getElementsByTagName("filterThickness")[0]))                            
                         if node.localName=="myTargetMaterial": #Option to chose the target material
-                            self.myTargetMaterial=self.getText(currentSource.getElementsByTagName("myTargetMaterial")[0])
-                if self.myType=="Monochromatic":
-                    self.myEnergySampling=1
+                            self.source_dict["myTargetMaterial"]=self.getText(currentSource.getElementsByTagName("myTargetMaterial")[0])
+                if self.source_dict["myType"]=="Monochromatic":
+                    self.source_dict["myEnergySampling"]=1
+                    self.source_dict["Energy"]=float(self.getText(self.currentSource.getElementsByTagName("myEnergy")[0]))
                 return
             
         raise ValueError("Source not found in the xml file")
             
-    def setMySpectrum(self):
+    def setMySpectrum(self, flu_fluEn=True):
         """
         sets the source spectrum from xml file value for monochromatic or Spekpy for polychromatic
 
@@ -68,74 +68,108 @@ class Source:
             None.
 
         """
-#        print("type de source:", self.myType)
+#        print("type de source:", self.source_dict["myType"])
 
         # Monochromatic source case
-        if self.myType=="Monochromatic":
-            self.mySpectrum.append((float(self.getText(self.currentSource.getElementsByTagName("myEnergy")[0])),1))
+        if self.source_dict["myType"]=="Monochromatic":
+            self.mySpectrum.append((self.source_dict["Energy"],1))
             spectrum=self.mySpectrum
             return
         
         # Polychromatic source case
-        if self.myType=="Polychromatic":
+        if self.source_dict["myType"]=="Polychromatic":
+            
+            # Polychromatic source case
             #get spectrum from spekpy
-            s = sp.Spek(kvp=self.myVoltage,th=12, targ=self.myTargetMaterial)
+            s = sp.Spek(kvp=self.source_dict["myVoltage"],th=12, targ=self.source_dict["myTargetMaterial"],dk=self.source_dict["myEnergySampling"])
             #taking into account exiting filter?
-            if self.exitingWindowMaterial is not None:
-                s.filter(self.exitingWindowMaterial, self.exitingWindowThickness)
-            spectrum=s.get_spectrum()
-            
-            plt.figure()
-            plt.plot(spectrum[0],spectrum[1])
-            plt.xlabel('Energy (keV)')
-            plt.title("Source filtered spectrum")
-            plt.show()
-            
-            #re-sampling at sourcre energy sampling (to get faster calculation at the end)
+            if self.source_dict["filterMaterial"] is not None:
+                s.filter(self.source_dict["filterMaterial"], self.source_dict["filterThickness"])
+            spectrum=s.get_spectrum( flu=flu_fluEn)
+            # print(f'mean energy emmited by source: {s.get_emean()}')
+            fl=0
+            for i in range(len(spectrum[0])):
+                if np.isnan(spectrum[1][i]):
+                    spectrum[1][i]=0
+                fl+=spectrum[1][i]
+                
+                
             energyplot=[]
             weightplot=[]
-            Nen=len(spectrum[0])
-            Nbin=int(np.ceil(Nen/self.myEnergySampling/2))
-            n=0
-            totWeight=0
-            for i in range(Nbin-1):
-                currBin=0
-                weightBin=0
-                energyBin=0
-                while currBin<self.myEnergySampling:
-                    weightBin+=spectrum[1][n]
-                    energyBin+=spectrum[1][n]*spectrum[0][n]
-                    n+=1
-                    currBin=currBin+0.5
-                self.mySpectrum.append((energyBin/weightBin,weightBin))
-                energyplot.append(energyBin/weightBin)
-                weightplot.append(weightBin)
-                totWeight+=weightBin
-                
-            currBin=0
-            weightBin=0
-            energyBin=0
-            while n<Nen:
-                weightBin+=spectrum[1][n]
-                energyBin+=spectrum[1][n]*spectrum[0][n]
-                n+=1
-            self.mySpectrum.append((energyBin/weightBin,weightBin))
-            energyplot.append(energyBin/weightBin)
-            weightplot.append(weightBin)
+            sumW=0
+            for i in range(len(spectrum[0])):
+                if spectrum[1][i]/fl>0.0001:
+                    self.mySpectrum.append((spectrum[0][i],spectrum[1][i]/fl*self.source_dict["myEnergySampling"]))
+                    energyplot.append(spectrum[0][i])
+                    weightplot.append(spectrum[1][i]/fl*self.source_dict["myEnergySampling"])
+                    sumW+=spectrum[1][i]/fl*self.source_dict["myEnergySampling"]
             
-            
-            k=0
-            while self.mySpectrum[0][1]/totWeight<0.001:
-                self.mySpectrum.pop(0)
-                energyplot.pop(0)
-                weightplot.pop(0)
-                k+=1
-                
             plt.figure()
             plt.plot(energyplot,weightplot)
             plt.xlabel('Energy (keV)')
-            plt.title("Resampled spectrum")
+            plt.title("Sampled source spectrum"+ str(sumW))
             plt.show()
+            
+            
+            
+            # #get spectrum from spekpy
+            # s = sp.Spek(kvp=self.source_dict["myVoltage"],th=12, targ=self.source_dict["myTargetMaterial"])
+            # #taking into account exiting filter?
+            # if self.source_dict["filterMaterial"] is not None:
+            #     s.filter(self.source_dict["filterMaterial"], self.source_dict["filterThickness"])
+            # spectrum=s.get_spectrum()
+            
+            # plt.figure()
+            # plt.plot(spectrum[0],spectrum[1])
+            # plt.xlabel('Energy (keV)')
+            # plt.title("Source filtered spectrum")
+            # plt.show()
+            
+            # #re-sampling at sourcre energy sampling (to get faster calculation at the end)
+            # energyplot=[]
+            # weightplot=[]
+            # Nen=len(spectrum[0])
+            # Nbin=int(np.ceil(Nen/self.source_dict["myEnergySampling"]/2))
+            # n=0
+            # totWeight=0
+            # for i in range(Nbin-1):
+            #     currBin=0
+            #     weightBin=0
+            #     energyBin=0
+            #     while currBin<self.source_dict["myEnergySampling"]:
+            #         weightBin+=spectrum[1][n]
+            #         energyBin+=spectrum[1][n]*spectrum[0][n]
+            #         n+=1
+            #         currBin=currBin+0.5
+            #     self.mySpectrum.append((energyBin/weightBin,weightBin))
+            #     energyplot.append(energyBin/weightBin)
+            #     weightplot.append(weightBin)
+            #     totWeight+=weightBin
+                
+            # currBin=0
+            # weightBin=0
+            # energyBin=0
+            # while n<Nen:
+            #     weightBin+=spectrum[1][n]
+            #     energyBin+=spectrum[1][n]*spectrum[0][n]
+            #     n+=1
+            # self.mySpectrum.append((energyBin/weightBin,weightBin))
+            # energyplot.append(energyBin/weightBin)
+            # weightplot.append(weightBin)
+            
+            
+            # k=0
+            # while self.mySpectrum[0][1]/totWeight<0.001:
+            #     self.mySpectrum.pop(0)
+            #     energyplot.pop(0)
+            #     weightplot.pop(0)
+            #     k+=1
+                
+            # plt.figure()
+            # plt.plot(energyplot,weightplot)
+            # plt.xlabel('Energy (keV)')
+            # plt.title("Resampled spectrum")
+            # plt.show()
             
             return
             
@@ -147,9 +181,19 @@ class Source:
     
     
 if __name__ == "__main__":
-    s = sp.Spek(kvp=40,th=12, targ='W')
-    s.filter('Be', 0.2)
-    spectrum=s.get_spectrum()
+    
+    # name = 'Water'
+    # comment = 'Defined by chemical formula'
+    # composition='H2O'
+    # sp.Spek.make_matl(matl_name=name, matl_density=1.0, chemical_formula=composition,matl_comment=comment)
+    
+    
+    s = sp.Spek(kvp=30,th=12, targ='Mo', dk=0.5)
+    # s.filter('Air', 800)
+    # s.filter('Water', 20)
+    # s.filter('C', 0.2)
+    # s.filter('Cu', 0.05)
+    spectrum=s.get_spectrum(flu=True)
     
     sumEn=0
     sumFlux=0
@@ -165,6 +209,7 @@ if __name__ == "__main__":
     stdDev=np.sqrt(stdDev/(sumFlux))
     
     print("Energy mean:", sumEn/sumFlux)
+    print("Flux", sumFlux*1e-8)
     print("Energy stdDev:", stdDev)
     
     plt.figure()

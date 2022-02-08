@@ -15,6 +15,7 @@ import glob
 from numba import jit
 
 def generateContrastPhantom(dimX, dimY, pixsize, angle):
+    parameters={}
     
     ##Everything in mm
     pixsize=pixsize/1000 #um to mm
@@ -23,10 +24,11 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     lines=np.zeros(dimY)
     projTot=np.zeros((dimX, dimY))
     smallTubesRadius=2 #mm
+    tubesHeight=10 #mm
     supportRadius=15 #mm
-    TubesCenters=[[22,7],[16.4,4.7],[10,7],[6,12.5],[6,19.5],[10,25],[16.4,27],[22,25],[21,16],[11,16],[16,11],[16,21]]
+    TubesCenters0=[[22,7],[16.4,4.7],[10,7],[6,12.5],[6,19.5],[10,25],[16.4,27],[22,25],[21,16],[11,16],[16,11],[16,21]]
     Nmat=12        
-    TubesCenters=np.asarray(TubesCenters, dtype=np.float64) #mm
+    TubesCenters=np.asarray(TubesCenters0, dtype=np.float64) #mm
 
     
     sliceTotMat=np.zeros((dimY, dimY))
@@ -36,6 +38,7 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     smallTubesRadiuspixInt=int(np.floor(smallTubesRadiuspix)+2) #pixEntier
     supportRadiuspix=supportRadius/pixsize
     supportRadiuspixInt=int(np.floor(supportRadiuspix)+2)
+    tubesHeightPix2=int(tubesHeight/2//(pixsize))
     
     origin=dimY/2-16/pixsize #pix
     
@@ -83,16 +86,15 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     
     for imat in range(Nmat+1):
         
-        projMat=np.ones((dimX,dimY))
+        projMat=np.zeros((dimX,dimY))
         Line=radon(Slice[imat],[angle])
         Nx,Ny=Line.shape
         Line=np.transpose(Line[int(np.round(Nx/2-dimY/2)):int(np.round(Nx/2+dimY/2))])
         
         if imat<12:
-            projMat=projMat*Line
+            projMat[dimX//2-tubesHeightPix2:dimX//2+tubesHeightPix2]=Line
         if imat==12:
-            projMat[int(np.floor(dimX/2)):dimX]=projMat[int(np.floor(dimX/2)):dimX]*Line
-            projMat[0:int(np.floor(dimX/2))]=0    
+            projMat[dimX//2:dimX//2+tubesHeightPix2]=Line
         
         projTot+=projMat*(imat+1)*pixsize*1e-3
         geometry.append(projMat*pixsize*1e-3)
@@ -103,8 +105,12 @@ def generateContrastPhantom(dimX, dimY, pixsize, angle):
     plt.imshow(geometry[12])
     plt.colorbar()
     plt.show()
+
+    parameters['smallTubesRadius']=(smallTubesRadius, 'mm')
+    parameters['supportRadius']=(supportRadius, 'mm')
+    parameters['tubes centers']=(TubesCenters0, 'mm')
     
-    return geometry
+    return geometry, parameters
 
     
 def openContrastPhantom(myGeometryFolder,dimX, dimY, pixsize,oversamp, angle):

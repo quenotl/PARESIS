@@ -9,12 +9,12 @@
     <source>
         <name>simap</name>
         <myType>Polychromatic</myType>
-        <mySize unit="um">8</mySize>
-        <sourceVoltage unit="kVp">40</sourceVoltage>
-        <exitingWindowMaterial>Be</exitingWindowMaterial>
-        <exitingWindowThickness unit="mm">0.2</exitingWindowThickness>
-        <myEnergySampling unit="keV">0.5</myEnergySampling>
-        <myTargetMaterial>Mo</myTargetMaterial>
+        <mySize unit="um">50</mySize>
+        <sourceVoltage unit="kVp">50</sourceVoltage>
+        <filterMaterial>Al</filterMaterial>
+        <filterThickness unit="mm">0.2</filterThickness>
+        <myEnergySampling unit="keV">2</myEnergySampling>
+        <myTargetMaterial>W</myTargetMaterial>
     </source>
     
     <source>
@@ -22,10 +22,10 @@
         <myType>Polychromatic</myType>
         <mySize unit="um">20</mySize>
         <sourceVoltage unit="kVp">55</sourceVoltage>
-        <exitingWindowMaterial>Al</exitingWindowMaterial>
-        <exitingWindowThickness unit="mm">2.5</exitingWindowThickness>
+        <filterMaterial>Al</filterMaterial>
+        <filterThickness unit="mm">2.5</filterThickness>
         <myEnergySampling unit="keV">0.5</myEnergySampling>
-        <myTargetMaterial>W</myTargetMaterial>
+        <myTargetMaterial>Mo</myTargetMaterial>
     </source>
     
 </listSources>

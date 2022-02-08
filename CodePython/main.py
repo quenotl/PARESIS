@@ -28,19 +28,21 @@ if __name__ == "__main__":
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="SIMAP_SpheresInTube"
+    exp_dict['experimentName']="Fil_Nylon_ID17"
     # Output filepath to store the result images
-    exp_dict['filepath']='../Results/SIMAP_SpheresInTube/'
+    exp_dict['filepath']='../Results/Fil_Nylon_ID17/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
+    exp_dict['overSampling']=2 # MUST BE AN INTEGER - >2 for ray-tracing model and even more for Fresnel (cf usefullScripts/getSamplingFactor.py)
     exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
-    exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True
     saving_format='.tif' #.tif or .edf
     exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
+    #**********START OF CALCULATIONS*****************************************
+    #************************************************************************
+    
     now=datetime.datetime.now()
     exp_dict['expID']=now.strftime("%Y%m%d-%H%M%S") #define experiment ID
     
@@ -51,18 +53,22 @@ if __name__ == "__main__":
     SubImage=[]
     Geometry=[]
     
+    print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
+    print("*************************")
     experiment=Experiment(exp_dict) 
     
+    
+    print("\nImages calculation")
+    print("*************************")
     for pointNum in range(exp_dict['nbExpPoints']):
         experiment.myMembrane.myGeometry=[]
-        experiment.myMembrane.getMyGeometry(experiment.studyDimensions,experiment.myMembrane.membranePixelSize,experiment.sampling, pointNum, exp_dict['nbExpPoints'])
-        print("\n\nINITIALIZING EXPERIMENT PARAMETERS AND GEOMETRIES")
-        print("\n\n*************************")
-        print("Calculations point",pointNum)
+        experiment.myMembrane.getMyGeometry(experiment.exp_dict['studyDimensions'],experiment.myMembrane.membranePixelSize,experiment.exp_dict['overSampling'], pointNum, exp_dict['nbExpPoints'])
+
+        print("\nCalculations point",pointNum)
         if exp_dict['simulation_type']=="Fresnel":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages(pointNum)
+            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages_Fresnel(pointNum)
         elif exp_dict['simulation_type']=="RayT":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy=experiment.computeSampleAndReferenceImagesRT(pointNum)
+            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy, Df=experiment.computeSampleAndReferenceImages_RT(pointNum)
         else:
             raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
         Nbin=len(SampleImageTmp)
@@ -75,7 +81,7 @@ if __name__ == "__main__":
                 expImagesFilePath=exp_dict['filepath']+'RayTracing_'+str(exp_dict['expID'])+'/'
             os.mkdir(expImagesFilePath)
             os.mkdir(expImagesFilePath+'membraneThickness/')
-            thresholds=experiment.myDetector.myBinsThersholds.copy()
+            thresholds=experiment.myDetector.det_param['myBinsThersholds'].copy()
             thresholds.insert(0,experiment.mySource.mySpectrum[0][0])
             for ibin in range(Nbin):
                 binstart='%2.2d'%thresholds[ibin]
@@ -90,7 +96,10 @@ if __name__ == "__main__":
                 os.mkdir(expPathEn[ibin]+'propag/')
             
         txtPoint = '%2.2d' % pointNum
-        save_image(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['sampleSampling'])+'_'+str(pointNum)+saving_format)
+        save_image(experiment.myMembrane.myGeometry[0], expImagesFilePath+'membraneThickness/'+exp_dict['experimentName']+'_sampling'+str(exp_dict['overSampling'])+'_'+str(pointNum)+saving_format)
+        
+        if exp_dict['simulation_type']=="RayT":
+            save_image(Df, expImagesFilePath+"DF"+saving_format)
             
         for ibin in range(Nbin):
             save_image(SampleImageTmp[ibin], expPathEn[ibin]+'sample/sampleImage_'+str(exp_dict['expID'])+'_'+txtPoint+saving_format)
@@ -99,6 +108,7 @@ if __name__ == "__main__":
             if pointNum==0:
                 save_image(PropagImageTmp[ibin], expPathEn[ibin]+'propag/PropagImage_'+str(exp_dict['expID'])+'_'+saving_format)
                 save_image(White[ibin], expPathEn[ibin]+'White_'+str(exp_dict['expID'])+'_'+saving_format)
+                
 
     experiment.saveAllParameters(time0,exp_dict)
     
