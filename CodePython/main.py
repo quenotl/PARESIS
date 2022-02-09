@@ -28,7 +28,7 @@ if __name__ == "__main__":
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="Fil_Nylon_ID17"
+    exp_dict['experimentName']="SpectralClinic_ContrastPhantom"
     # Output filepath to store the result images
     exp_dict['filepath']='../Results/Fil_Nylon_ID17/'
     # Define algorithm parameters
