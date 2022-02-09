@@ -6,7 +6,6 @@
         <name>Mask_CuSn_From_txt</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPMMAThickness unit="um">6000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
         <myMeanSphereRadius>50</myMeanSphereRadius>
@@ -17,7 +16,6 @@
         <name>Mask_CuSn_From_txt_config1</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>Cu,PMMA</myMaterials>
         <myMeanSphereRadius>15</myMeanSphereRadius>
@@ -28,7 +26,6 @@
         <name>Mask_CuSn_From_txt_config3</name>
         <myType>membrane</myType>
         <myGeometryFunction>getMembraneSegmentedFromFile</myGeometryFunction>
-        <myMembraneFile>Samples/Membranes/CuSn.txt</myMembraneFile>
         <myPMMAThickness unit="um">4000</myPMMAThickness>
         <myMaterials>CuSn,PMMA</myMaterials>
         <myMeanSphereRadius>25</myMeanSphereRadius>
@@ -67,7 +64,7 @@
         <name>spheres_in_cylinder</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleSpheresInCylinder</myGeometryFunction>
-        <myMaterials>Muscle,Cartilage,Solid Water</myMaterials>
+        <myMaterials>Muscle,Cartilage,SolidWater</myMaterials>
     </sample>
     
     <sample>
@@ -82,29 +79,29 @@
         <name>spheres_in_parallelepiped</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleSpheresInParallelepiped</myGeometryFunction>
-        <myMaterials>Muscle,Lung,Solid Water</myMaterials>
+        <myMaterials>Muscle,Lung,SolidWater</myMaterials>
     </sample>
     
     <sample>
         <name>ContrastPhantomID17</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>generateContrastPhantom</myGeometryFunction>
-        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,SolidWater</myMaterials>
     </sample>
     
     <sample>
         <name>ContrastPhantomSpectralClinic</name>
         <myType>sample_of_interest</myType>
-        <myGeometryFunction>openContrastPhantom</myGeometryFunction>
-        <myGeometryFolder>ContrastPhantom/CP_pixsize25um_1040x3040_angle50deg/</myGeometryFolder>
-        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,Solid Water,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,Solid Water</myMaterials>
+        <myGeometryFunction>loadSampleGeometryFromImages</myGeometryFunction>
+        <myGeometryFolder>ContrastPhantom/CP_pixsize25um_1000x3000_angle50deg/</myGeometryFolder>
+        <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,SolidWater,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,SolidWater</myMaterials>
     </sample>
     
     <!--ADDITIONNAL ELEMENTS-->
     
     <sample>
         <name>C_plate</name>
-        <myType>thin_film</myType>
+        <myType>thin_film</myType> <!--element that will be placed in front of the detector-->
         <myGeometryFunction>get_my_thickness</myGeometryFunction>
         <myMaterials>CarbonFiber</myMaterials>
         <myThickness unit="um">2500</myThickness>
