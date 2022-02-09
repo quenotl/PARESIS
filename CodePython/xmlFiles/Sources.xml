@@ -24,8 +24,8 @@
         <sourceVoltage unit="kVp">55</sourceVoltage>
         <filterMaterial>Al</filterMaterial>
         <filterThickness unit="mm">2.5</filterThickness>
-        <myEnergySampling unit="keV">0.5</myEnergySampling>
-        <myTargetMaterial>Mo</myTargetMaterial>
+        <myEnergySampling unit="keV">5</myEnergySampling>
+        <myTargetMaterial>W</myTargetMaterial>
     </source>
     
 </listSources>
