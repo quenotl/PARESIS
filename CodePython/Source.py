@@ -13,6 +13,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.ndimage.filters import gaussian_filter, median_filter
 import spekpy as sp
+import xlrd
 
 class Source:
     def __init__(self):
@@ -24,6 +25,15 @@ class Source:
         self.source_dict["mySize"]=0.
         self.source_dict["myEnergySampling"]=1
         self.source_dict["myType"]=None
+        self.spectrumFromXls=False
+        
+        #initialize units
+        self.source_dict["mySize_unit"]="um"
+        self.source_dict["myEnergySampling_unit"]="keV"
+        self.source_dict["myVoltage_unit"]="kVp"
+        self.source_dict["Energy_unit"]="keV"
+        self.source_dict["filterThickness_unit"]="mm"
+        
         
     def defineCorrectValuesSource(self):
         """
@@ -44,10 +54,16 @@ class Source:
                 self.source_dict["myType"]=self.getText(currentSource.getElementsByTagName("myType")[0])
                 if self.source_dict["myType"]=="Polychromatic":
                     self.source_dict["filterMaterial"]=None
-                    self.source_dict["myTargetMaterial"]='W'
                     self.source_dict["myEnergySampling"]=float(self.getText(currentSource.getElementsByTagName("myEnergySampling")[0]))
-                    self.source_dict["myVoltage"]=float(self.getText(currentSource.getElementsByTagName("sourceVoltage")[0]))
                     for node in currentSource.childNodes:
+                        if node.localName=="sourceVoltage":
+                            self.source_dict["myVoltage"]=float(self.getText(currentSource.getElementsByTagName("sourceVoltage")[0]))
+                        if node.localName=="spectrumFromXls":
+                            self.spectrumFromXls=bool(self.getText(currentSource.getElementsByTagName("spectrumFromXls")[0]))
+                            self.source_dict["pathXlsSpectrum"]=self.getText(currentSource.getElementsByTagName("pathXlsSpectrum")[0])
+                            self.source_dict["energyUnit"]=self.getText(currentSource.getElementsByTagName("energyUnit")[0])
+                            self.source_dict["energyColumnKey"]=self.getText(currentSource.getElementsByTagName("energyColumnKey")[0])
+                            self.source_dict["fluenceColumnKey"]=self.getText(currentSource.getElementsByTagName("fluenceColumnKey")[0])
                         if node.localName=="filterMaterial":
                             self.source_dict["filterMaterial"]=self.getText(currentSource.getElementsByTagName("filterMaterial")[0])
                             self.source_dict["filterThickness"]=float(self.getText(currentSource.getElementsByTagName("filterThickness")[0]))                            
@@ -78,100 +94,151 @@ class Source:
         
         # Polychromatic source case
         if self.source_dict["myType"]=="Polychromatic":
+            if not self.spectrumFromXls:
+                if not "myTargetMaterial" in self.source_dict:
+                    self.source_dict["myTargetMaterial"]='W'
+                # Polychromatic source case
+                #get spectrum from spekpy
+                s = sp.Spek(kvp=self.source_dict["myVoltage"],th=12, targ=self.source_dict["myTargetMaterial"],dk=self.source_dict["myEnergySampling"])
+                #taking into account exiting filter?
+                if self.source_dict["filterMaterial"] is not None:
+                    s.filter(self.source_dict["filterMaterial"], self.source_dict["filterThickness"])
+                spectrum=s.get_spectrum( flu=flu_fluEn)
+                # print(f'mean energy emmited by source: {s.get_emean()}')
+                fl=0
+                for i in range(len(spectrum[0])):
+                    if np.isnan(spectrum[1][i]):
+                        spectrum[1][i]=0
+                    fl+=spectrum[1][i]
+                    
+                    
+                energyplot=[]
+                weightplot=[]
+                sumW=0
+                for i in range(len(spectrum[0])):
+                    if spectrum[1][i]/fl>0.0001:
+                        self.mySpectrum.append((spectrum[0][i],spectrum[1][i]/fl*self.source_dict["myEnergySampling"]))
+                        energyplot.append(spectrum[0][i])
+                        weightplot.append(spectrum[1][i]/fl*self.source_dict["myEnergySampling"])
+                        sumW+=spectrum[1][i]/fl*self.source_dict["myEnergySampling"]
+                
+                plt.figure()
+                plt.plot(energyplot,weightplot)
+                plt.xlabel('Energy (keV)')
+                plt.title("Sampled source spectrum"+ str(sumW))
+                plt.show()
             
-            # Polychromatic source case
-            #get spectrum from spekpy
-            s = sp.Spek(kvp=self.source_dict["myVoltage"],th=12, targ=self.source_dict["myTargetMaterial"],dk=self.source_dict["myEnergySampling"])
-            #taking into account exiting filter?
-            if self.source_dict["filterMaterial"] is not None:
-                s.filter(self.source_dict["filterMaterial"], self.source_dict["filterThickness"])
-            spectrum=s.get_spectrum( flu=flu_fluEn)
-            # print(f'mean energy emmited by source: {s.get_emean()}')
-            fl=0
-            for i in range(len(spectrum[0])):
-                if np.isnan(spectrum[1][i]):
-                    spectrum[1][i]=0
-                fl+=spectrum[1][i]
+            else:
+                rightUnitScale=1
+                if self.source_dict["energyUnit"]=="eV":
+                    rightUnitScale=0.001
+                elif self.source_dict["energyUnit"]=="MeV":
+                    rightUnitScale=1000
+                
+                spectrum=[]
+                colEnergy=None
+                colFluence=None
+                i=0
+                for sh in xlrd.open_workbook(self.source_dict["pathXlsSpectrum"]).sheets():
+                    foundData=0
+                    for row in range(sh.nrows):
+                        for col in range(sh.ncols):
+                            myCell = sh.cell(row, col)
+        #                    print("\n\n Sample materials : ",self.myMaterials[imat])
+                            if myCell.value == self.source_dict["energyColumnKey"]:
+                                colEnergy=col
+                                startRow=row
+                                foundData+=1
+                            if myCell.value == self.source_dict["fluenceColumnKey"]:
+                                colFluence=col
+                                foundData+=1
+                            
+                        if foundData==2:
+                            break
+                        
+                    if colEnergy==None:
+                        raise Exception (f'Energy column key {self.source_dict["energyColumnKey"]} not found in the xls file')
+                    if colFluence==None:
+                        raise Exception (f'Energy column key {self.source_dict["fluenceColumnKey"]} not found in the xls file')
+                        
+                        
+                    sumFluence=0
+                    for row in range(startRow+1, sh.nrows):
+                        myCellFluence = sh.cell(row, colFluence)
+                        fluence=myCellFluence.value
+                        myCellEnergy = sh.cell(row, colEnergy)
+                        energy=myCellEnergy.value* rightUnitScale
+                        if myCell.value is not None:
+                            spectrum.append([energy,fluence])
+                            sumFluence+=fluence
+                            
+                arraySpectrum=np.asarray(spectrum)
+                
+                # plt.figure()
+                # plt.plot(arraySpectrum[:,0],arraySpectrum[:,1])
+                # plt.xlabel('Energy (keV)')
+                # plt.title("Source spectrum")
+                # plt.show()
+                
+                #re-sampling at sourcre energy sampling (to get faster calculation at the end)
+                energyplot=[]
+                weightplot=[]
+                den=spectrum[1][0]-spectrum[0][0]
+                    
+                Nen=len(spectrum)
+                Nbin=int((spectrum[-1][0]-spectrum[0][0])//self.source_dict["myEnergySampling"])
+                # Nbin=int(np.ceil(Nen/self.source_dict["myEnergySampling"]/2))
+                n=0
+                totWeight=0
+                for i in range(Nbin-1):
+                    currBin=0
+                    weightBin=0
+                    energyBin=0
+                    while currBin<self.source_dict["myEnergySampling"]:
+                        weightBin+=spectrum[n][1]
+                        energyBin+=spectrum[n][1]*spectrum[n][0]
+                        n+=1
+                        currBin=currBin+den
+                    if weightBin!=0:
+                        # self.mySpectrum.append((energyBin/weightBin,weightBin))
+                        energyplot.append(energyBin/weightBin)
+                        weightplot.append(weightBin)
+                    totWeight+=weightBin
+                    
+                currBin=0
+                weightBin=0
+                energyBin=0
+                while n<Nen:
+                    weightBin+=spectrum[n][1]
+                    energyBin+=spectrum[n][1]*spectrum[n][0]
+                    n+=1
+                if weightBin!=0:
+                    # self.mySpectrum.append((energyBin/weightBin,weightBin))
+                    energyplot.append(energyBin/weightBin)
+                    weightplot.append(weightBin)
+                
+                for i in range(len(energyplot)):
+                    flux=weightplot[i]/totWeight
+                    if flux>0.001:
+                        self.mySpectrum.append((energyplot[i],flux))
                 
                 
-            energyplot=[]
-            weightplot=[]
-            sumW=0
-            for i in range(len(spectrum[0])):
-                if spectrum[1][i]/fl>0.0001:
-                    self.mySpectrum.append((spectrum[0][i],spectrum[1][i]/fl*self.source_dict["myEnergySampling"]))
-                    energyplot.append(spectrum[0][i])
-                    weightplot.append(spectrum[1][i]/fl*self.source_dict["myEnergySampling"])
-                    sumW+=spectrum[1][i]/fl*self.source_dict["myEnergySampling"]
-            
-            plt.figure()
-            plt.plot(energyplot,weightplot)
-            plt.xlabel('Energy (keV)')
-            plt.title("Sampled source spectrum"+ str(sumW))
-            plt.show()
-            
-            
-            
-            # #get spectrum from spekpy
-            # s = sp.Spek(kvp=self.source_dict["myVoltage"],th=12, targ=self.source_dict["myTargetMaterial"])
-            # #taking into account exiting filter?
-            # if self.source_dict["filterMaterial"] is not None:
-            #     s.filter(self.source_dict["filterMaterial"], self.source_dict["filterThickness"])
-            # spectrum=s.get_spectrum()
-            
-            # plt.figure()
-            # plt.plot(spectrum[0],spectrum[1])
-            # plt.xlabel('Energy (keV)')
-            # plt.title("Source filtered spectrum")
-            # plt.show()
-            
-            # #re-sampling at sourcre energy sampling (to get faster calculation at the end)
-            # energyplot=[]
-            # weightplot=[]
-            # Nen=len(spectrum[0])
-            # Nbin=int(np.ceil(Nen/self.source_dict["myEnergySampling"]/2))
-            # n=0
-            # totWeight=0
-            # for i in range(Nbin-1):
-            #     currBin=0
-            #     weightBin=0
-            #     energyBin=0
-            #     while currBin<self.source_dict["myEnergySampling"]:
-            #         weightBin+=spectrum[1][n]
-            #         energyBin+=spectrum[1][n]*spectrum[0][n]
-            #         n+=1
-            #         currBin=currBin+0.5
-            #     self.mySpectrum.append((energyBin/weightBin,weightBin))
-            #     energyplot.append(energyBin/weightBin)
-            #     weightplot.append(weightBin)
-            #     totWeight+=weightBin
+                finalSpectrum=self.mySpectrum
+                # k=0
+                # while self.mySpectrum[0][1]/totWeight<0.001:
+                #     self.mySpectrum.pop(0)
+                #     energyplot.pop(0)
+                #     weightplot.pop(0)
+                #     k+=1
                 
-            # currBin=0
-            # weightBin=0
-            # energyBin=0
-            # while n<Nen:
-            #     weightBin+=spectrum[1][n]
-            #     energyBin+=spectrum[1][n]*spectrum[0][n]
-            #     n+=1
-            # self.mySpectrum.append((energyBin/weightBin,weightBin))
-            # energyplot.append(energyBin/weightBin)
-            # weightplot.append(weightBin)
+                plt.figure()
+                plt.plot(energyplot,weightplot)
+                plt.xlabel('Energy (keV)')
+                plt.title("Xls source spectrum")
+                plt.show()
+                    
+        return
             
-            
-            # k=0
-            # while self.mySpectrum[0][1]/totWeight<0.001:
-            #     self.mySpectrum.pop(0)
-            #     energyplot.pop(0)
-            #     weightplot.pop(0)
-            #     k+=1
-                
-            # plt.figure()
-            # plt.plot(energyplot,weightplot)
-            # plt.xlabel('Energy (keV)')
-            # plt.title("Resampled spectrum")
-            # plt.show()
-            
-            return
             
         raise ValueError("type of source not recognized")
         

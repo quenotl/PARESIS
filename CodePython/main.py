@@ -21,19 +21,19 @@ if __name__ == "__main__":
     """main of the simulation code.
 
     Notes:
-        Set the parameters below and parameters in .xml files then launch
+        Set the parameters below and parameters in .xml files then run
     """
     time0=time.time() #timer for computation
     exp_dict={}
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="SpectralClinic_ContrastPhantom"
+    exp_dict['experimentName']="SIMAP_SpheresInTube"
     # Output filepath to store the result images
-    exp_dict['filepath']='../Results/Fil_Nylon_ID17/'
+    exp_dict['filepath']='../Results/SIMAP_SpheresInTube/'
     # Define algorithm parameters
     exp_dict['overSampling']=2 # MUST BE AN INTEGER - >2 for ray-tracing model and even more for Fresnel (cf usefullScripts/getSamplingFactor.py)
-    exp_dict['nbExpPoints']=2 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
+    exp_dict['nbExpPoints']=1 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     save=True
     saving_format='.tif' #.tif or .edf
     exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 

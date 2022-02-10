@@ -18,6 +18,18 @@
     </source>
     
     <source>
+        <name>simap2</name>
+        <myType>Polychromatic</myType>
+        <spectrumFromXls>True</spectrumFromXls>
+        <pathXlsSpectrum>Sources/W_50kVp.xls</pathXlsSpectrum>
+        <energyUnit>eV</energyUnit> <!--eV, keV or MeV-->
+        <energyColumnKey>Energy</energyColumnKey>
+        <fluenceColumnKey>Flux</fluenceColumnKey>
+        <myEnergySampling unit="keV">4</myEnergySampling>
+        <mySize unit="um">50</mySize>
+    </source>
+    
+    <source>
         <name>clinic</name>
         <myType>Polychromatic</myType>
         <mySize unit="um">20</mySize>

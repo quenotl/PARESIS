@@ -12,8 +12,8 @@ import numpy as np
 from Samples.getMembraneFromFile import getMembraneFromFile, getMembraneSegmentedFromFile
 import xlrd
 from matplotlib import pyplot as plt
-from Samples.generateContrastPhantom import generateContrastPhantom, openContrastPhantom
-from Samples.createSampGeom import CreateSampleSpheresInParallelepiped, CreateSampleSpheresInCylinder, CreateSampleCylindre, CreateSampleSphere, CreateYourSampleGeometry
+from Samples.generateContrastPhantom import generateContrastPhantom
+from Samples.createSampGeom import CreateSampleSpheresInParallelepiped, CreateSampleSpheresInCylinder, CreateSampleCylindre, CreateSampleSphere, CreateYourSampleGeometry, loadSampleGeometryFromImages
 import time
 from numba import jit 
 
@@ -48,12 +48,13 @@ class Sample:
                 self.myMaterials=list(self.myMaterials.split(","))
                 self.myGeometryFunction=self.getText(currentSample.getElementsByTagName("myGeometryFunction")[0])
                                 
-                if self.myGeometryFunction=="getMembraneFromFile" or self.myGeometryFunction=="getMembraneSegmentedFromFile":
+                if self.myGeometryFunction=="getMembraneFromFile":
                     self.myMembraneFile=self.getText(currentSample.getElementsByTagName("myMembraneFile")[0])
                     self.myPMMAThickness=float(self.getText(currentSample.getElementsByTagName("myPMMAThickness")[0]))
                 if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))
                     self.myNbOfLayers=int(self.getText(currentSample.getElementsByTagName("myNbOfLayers")[0]))
+                    self.myPMMAThickness=float(self.getText(currentSample.getElementsByTagName("myPMMAThickness")[0]))
                 
                 if self.myGeometryFunction=="get_my_thickness":
                     if self.myName!="air_volume":
@@ -67,7 +68,7 @@ class Sample:
                     self.myVolumesFiles=self.getText(currentSample.getElementsByTagName("myVolumesFiles")[0])
                     self.myVolumesFiles=list(self.myVolumesFiles.split(","))        
                 
-                if self.myGeometryFunction=="openContrastPhantom":
+                if self.myGeometryFunction=="loadSampleGeometryFromImages":
                     self.myGeometryFolder=self.getText(currentSample.getElementsByTagName("myGeometryFolder")[0])
 
                 return
@@ -209,8 +210,8 @@ class AnalyticalSample(Sample):
                 self.myGeometry,self.geom_parameters=generateContrastPhantom(studyDimensions[0],studyDimensions[1],studyPixelSize, angle=30)
                 self.myGeometry=np.array(self.myGeometry)
                 return
-            if self.myGeometryFunction=="openContrastPhantom":
-                self.myGeometry=openContrastPhantom(self.myGeometryFolder,studyDimensions[0],studyDimensions[1],studyPixelSize,oversamp, angle=90)
+            if self.myGeometryFunction=="loadSampleGeometryFromImages":
+                self.myGeometry,self.geom_parameters=loadSampleGeometryFromImages(self.myGeometryFolder,studyDimensions[0],studyDimensions[1],studyPixelSize)
                 self.myGeometry=np.array(self.myGeometry)
                 return
         

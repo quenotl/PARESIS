@@ -38,6 +38,18 @@ class Experiment:
         self.exp_dict['inVacuum']=False
         self.exp_dict['meanShotCount']=0
         self.exp_dict['meanEnergy']=0
+        self.exp_dict['distSourceToMembrane']=0
+        self.exp_dict['distMembraneToObject']=0
+        self.exp_dict['distObjectToDetector']=0
+        
+        #Parameters units
+        self.exp_dict['studyPixelSize_unit']="um"
+        self.exp_dict['studyDimensions_unit']="pixels"
+        self.exp_dict['meanEnergy_unit']="keV"
+        self.exp_dict['distSourceToMembrane_unit']="m"
+        self.exp_dict['distMembraneToObject_unit']="m"
+        self.exp_dict['distObjectToDetector_unit']="m"
+        
         
         self.mySampleofInterest=None
         self.mySampleType=""
@@ -115,8 +127,10 @@ class Experiment:
         if self.mySource.source_dict["myType"]=='Monochromatic':
             print(f'Energy: {self.mySource.source_dict["Energy"]} keV')
         else:
-            print(f'Source voltage: {self.mySource.source_dict["myVoltage"]} kVp')
-            print(f'Anode material: {self.mySource.source_dict["myTargetMaterial"]}')
+            if "myVoltage" in self.mySource.source_dict:
+                print(f'Source voltage: {self.mySource.source_dict["myVoltage"]} kVp')
+            if "myTargetMaterial" in self.mySource.source_dict:
+                print(f'Anode material: {self.mySource.source_dict["myTargetMaterial"]}')
             if self.mySource.source_dict["filterMaterial"] is not None:
                 print(f'filter: {self.mySource.source_dict["filterMaterial"]} of {self.mySource.source_dict["filterThickness"]} mm')
         print("\nCurrent sample:", self.mySampleofInterest.myName)
@@ -533,7 +547,12 @@ class Experiment:
         
         
         for cle, valeur in self.exp_dict.items():
-            f.write(f'\n    {cle}: {valeur}')        
+            if cle.split('_')[-1]!='unit':
+                if cle+"_unit" in self.exp_dict:
+                    cleUnit=cle+"_unit"
+                    f.write(f'\n    {cle}: {valeur} {self.exp_dict[cleUnit]}')
+                else:
+                    f.write(f'\n    {cle}: {valeur}')     
             
         f.write("\n\nEntire computing time: %gs" %(time.time()-time0))   
 
@@ -545,7 +564,12 @@ class Experiment:
         f.write("\n\nSource parameters:")
         f.write("\nSource name: %s" %self.mySource.myName)
         for cle, valeur in self.mySource.source_dict.items():
-            f.write(f'\n    {cle}: {valeur}')        
+            if cle.split('_')[-1]!='unit':
+                if cle+"_unit" in self.mySource.source_dict:
+                    cleUnit=cle+"_unit"
+                    f.write(f'\n    {cle}: {valeur} {self.mySource.source_dict[cleUnit]}')
+                else:
+                    f.write(f'\n    {cle}: {valeur}')        
         # f.write("\nSource type: %s" %self.mySource.source_dict['myType'])
         # f.write("\nSource size: %gum" %self.mySource.source_dict["mySize"])
         # if self.mySource.myType=="Monochromatic":
@@ -558,7 +582,12 @@ class Experiment:
         f.write("\n\nDetector parameters:")
         f.write("\nDetector name: %s"%self.myDetector.myName)
         for cle, valeur in self.myDetector.det_param.items():
-            f.write(f'\n    {cle}: {valeur}')        
+            if cle.split('_')[-1]!='unit':
+                if cle+"_unit" in self.myDetector.det_param:
+                    cleUnit=cle+"_unit"
+                    f.write(f'\n    {cle}: {valeur} {self.myDetector.det_param[cleUnit]}')
+                else:
+                    f.write(f'\n    {cle}: {valeur}')     
         # f.write("\nDetector dimensions:"+str(self.myDetector.det_param['myDimensions'][0])+"x"+str(self.myDetector.det_param['myDimensions'][1])+"pix")
         # f.write("\nDetector pixels size: %gum" %self.myDetector.det_param['myPixelSize'])
         # f.write("\nDetector PSF: %gpix" %self.myDetector.myPSF)

@@ -32,6 +32,14 @@ class Detector:
         self.mySpectralEfficiency=[]
         self.beta=[]
         
+        # parameters units
+        self.det_param["myDimensions_unit"]="pixels"
+        self.det_param["myPixelSize_unit"]="um"
+        self.det_param["myPSF_unit"]="pixels"
+        self.det_param["myBinsThersholds_unit"]="keV" #keV
+        self.det_param["myScintillatorThickness_unit"]="um" #um
+        
+        
         
     def defineCorrectValuesDetector(self):
         """
@@ -163,12 +171,15 @@ class Detector:
             plotEff.append(currEfficiency)
             plotEn.append(energyData)
             i+=1
-        plt.figure()
-        plt.plot(plotEn,plotEff)
-        plt.xlabel('Energy (keV)')
-        plt.ylabel('Attenuation')
-        plt.title("Detector scintillator attenuation power")
-        plt.show()
+        if len(plotEff)>1:
+            plt.figure()
+            plt.plot(plotEn,plotEff)
+            plt.xlabel('Energy (keV)')
+            plt.ylabel('Attenuation')
+            plt.title("Detector scintillator attenuation power")
+            plt.show()
+        else:
+            print(f'Scintillator attenuation at {plotEn[0]} keV: {plotEff[0]}')
                 
     
 @jit(nopython=True)
