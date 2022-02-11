@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Sample module &#8212; PARESIS DOC 2022.02.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-Sample">
+<span id="sample-module"></span><h1>Sample module<a class="headerlink" href="#module-Sample" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Jan 16 10:14:18 2020</p>
+<p>&#64;author: quenot</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Sample.AnalyticalSample">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Sample.</span></span><span class="sig-name descname"><span class="pre">AnalyticalSample</span></span><a class="headerlink" href="#Sample.AnalyticalSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Sample.Sample" title="Sample.Sample"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sample.Sample</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.AnalyticalSample.getMyGeometry">
+<span class="sig-name descname"><span class="pre">getMyGeometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">studyDimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">studyPixelSize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oversamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointNum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sample.AnalyticalSample.getMyGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets sample geometry maps for each of their materials geometry[material, x, y]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>studyDimensions</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>) – (Dimx, Dimy).</p></li>
+<li><p><strong>studyPixelSize</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – voxel size in the considered plane in um (taking into account the overoverSampling).</p></li>
+<li><p><strong>oversamp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – overoverSampling compared to detector pixels.</p></li>
+<li><p><strong>pointNum</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int,</span> <span class="pre">optional</span></code>) – number of the calculated point (only useful to move the membrane between each point). Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Could not define sample geometry means that the case was not found.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.AnalyticalSample.setWave">
+<span class="sig-name descname"><span class="pre">setWave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incidentWave</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sample.AnalyticalSample.setWave" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets waves through the sample</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>incidentWave</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">2d</span> <span class="pre">numpy</span> <span class="pre">array</span></code>) – wave before the sample.</p></li>
+<li><p><strong>energy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – considered energy in keV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – Sample Geometry has the wrong nb of dim [material, x, y].</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>wave after the sample.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>disturbedWave (2d numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.AnalyticalSample.setWaveRT">
+<span class="sig-name descname"><span class="pre">setWaveRT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incidentIntensity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incidentphi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incidentDf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sample.AnalyticalSample.setWaveRT" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets intensity and phase through the sample</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>incidentIntensity</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">2d</span> <span class="pre">numpy</span> <span class="pre">array</span></code>) – DESCRIPTION.</p></li>
+<li><p><strong>incidentphi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">2d</span> <span class="pre">numpy</span> <span class="pre">array</span></code>) – DESCRIPTION.</p></li>
+<li><p><strong>energy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – current energy in keV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>intensity after attenuation of the sample.
+disturbedPhi (2d numpy array): phase shift due to the sample.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>disturbedIntensity (2d numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Sample.Sample">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Sample.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><a class="headerlink" href="#Sample.Sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.Sample.defineCorrectValuesSample">
+<span class="sig-name descname"><span class="pre">defineCorrectValuesSample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sample.Sample.defineCorrectValuesSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets all sample parameters from xml file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Sample not found in the xml file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.Sample.getDeltaBeta">
+<span class="sig-name descname"><span class="pre">getDeltaBeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sourceSpectrum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sample.Sample.getDeltaBeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets each materials delta and beta parameters for every energy of the spectrum</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sourceSpectrum</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span> <span class="pre">of</span> <span class="pre">tuples</span></code>) – spectrum of the source containing energy (in keV) and weights.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sample.Sample.getText">
+<span class="sig-name descname"><span class="pre">getText</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sample.Sample.getText" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PARESIS DOC</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Quenot.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Sample.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
