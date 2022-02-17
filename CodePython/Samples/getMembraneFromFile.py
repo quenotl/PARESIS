@@ -54,7 +54,7 @@ def getMembraneFromFile(myMembraneFile,studyDimensions, numPoint, supportThickne
     parametres={}
     parametres["Membrane geometry folder"]= (fullImagePaths, '')
     parametres["Support thickness"]= (supportThickness, 'um')
-    return geom
+    return geom, parametres
 
 
 def getMembraneSegmentedFromFile(sample,dimX,dimY,pixSize, pointNum, supportThickness):
