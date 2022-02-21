@@ -67,7 +67,7 @@
         <name>spheres_in_tube</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>CreateSampleSpheresInTube</myGeometryFunction>
-        <myMaterials>Muscle,Cartilage,Solid Water</myMaterials>
+        <myMaterials>Muscle,Cartilage,PMMA</myMaterials>
     </sample>
     
     <sample>

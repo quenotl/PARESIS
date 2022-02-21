@@ -16,7 +16,7 @@ from numpy.fft import fftshift, ifftshift, fft2, ifft2
 from numpy import pi
 from refractionFileNumba import fastRefraction
 from getk import getk
-import multiprocessing as mp
+import multiprocess as mp
 from minOversampling import minOversampling
 
 class Experiment:
@@ -238,7 +238,6 @@ class Experiment:
         """
         
         #INITIALIZING PARAMETERS
-        sumIntensity=0
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThresholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThresholds):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
@@ -247,15 +246,6 @@ class Experiment:
             #     self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
     
         effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
-        # #??? possibly won't need any of this
-        # nbins=len(self.myDetector.myBinsThresholds)
-        # SampleImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        # ReferenceImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        # PropagImage=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        # detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        
-
-
         
         #Defining total flux for normalizing spectrum
         energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
@@ -263,12 +253,10 @@ class Experiment:
         #####################################################################################
         global _parallel_propagate
         #Calculating everything for each energy of the spectrum
-        def _parallel_propagate(args):
-            currentEnergy = args[0]
-            flux = args[1]
+        def _parallel_propagate(currentEnergy, flux):
             print("\nCurrent Energy:", currentEnergy)
             #Taking into account source window and air attenuation of intensity
-            incidentIntensity=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)*flux/self.mySource.totalFlux()
+            incidentIntensity=np.ones([*self.studyDimensions])*self.meanShotCount*flux/self.mySource.totalFlux()
             incidentIntensity, _=self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
@@ -302,9 +290,6 @@ class Experiment:
             if self.myPlaque is not None:
                 intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
             
-            ##########
-            # self.imageSampleBeforeDetection = self.imageSampleBeforeDetection + intensitySampleBeforeDetection
-            # self.imageReferenceBeforeDetection = self.imageReferenceBeforeDetection + intensityReferenceBeforeDetection
             
             Intensity = np.mean(intensityReferenceBeforeDetection)
             self.meanEnergy+=currentEnergy*Intensity
@@ -317,99 +302,57 @@ class Experiment:
                 if self.myPlaque is not None:
                     intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
                     #######
-                # self.imagePropagBeforeDetection = self.imagePropagBeforeDetection + intensityPropagBeforeDetection
                 incidentIntensityWhite=incidentWave**2
                 if self.myPlaque is not None:
                     incidentIntensityWhite,_=self.myPlaque.setWaveRT(incidentWave**2,1, currentEnergy)
-                # self.white = self.white+incidentIntensityWhite
+            # XXX Not sure if this is necessary???
+            else:
+                intensityPropagBeforeDetection = incidentIntensityWhite = np.zeros([*self.studyDimensions])
 
-            return incidentIntensity, intensitySampleBeforeDetection, intensityReferenceBeforeDetection, intensityPropagBeforeDetection, incidentIntensityWhite
+            return intensitySampleBeforeDetection, intensityReferenceBeforeDetection, intensityPropagBeforeDetection, incidentIntensityWhite
 
         splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
         binned_energies = np.split(energies, splits)
         binned_fluxes = np.split(fluxes, splits)
-
-        self.incidentIntensity = []
+        binned_energies = [i for i in binned_energies if i.size]
+        binned_fluxes = [i for i in binned_fluxes if i.size]
         self.imageSampleBeforeDetection = []
         self.imageReferenceBeforeDetection = []
         self.imagePropagBeforeDetection = []
         self.white = []
-
+        # TODO only do it with pool if multiprocessing, so only have one experiment file
+        # TODO pass the cpu count as an argument
         pool = mp.Pool(processes = mp.cpu_count())
         for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
-            # print(list(zip(bin_en, bin_flu)))
-            # return
             binlength = len(bin_en)
-            ii = np.zeros((binlength, *self.studyDimensions))
             isbd = np.zeros((binlength, *self.studyDimensions))
             irbd = np.zeros((binlength, *self.studyDimensions))
             ipbd = np.zeros((binlength, *self.studyDimensions))
             iw = np.zeros((binlength, *self.studyDimensions))
 
-            sum_ii = np.zeros(self.studyDimensions)
             sum_isbd = np.zeros(self.studyDimensions)
             sum_irbd = np.zeros(self.studyDimensions)
             sum_ipbd = np.zeros(self.studyDimensions)
             sum_iw = np.zeros(self.studyDimensions)
 
-            ii, isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.map(_parallel_propagate, list(zip(bin_en, bin_flu)))))))
-            sum_ii = ii.sum(0)
+            isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagate, zip(bin_en, bin_flu))))))
             sum_isbd = isbd.sum(0)
+            sum_irbd = irbd.sum(0)
             sum_ipbd = ipbd.sum(0)
             sum_iw = iw.sum(0)
-            self.incidentIntensity.append(sum_ii)
             self.imageSampleBeforeDetection.append(sum_isbd)
             self.imageReferenceBeforeDetection.append(sum_irbd)
             self.imagePropagBeforeDetection.append(sum_ipbd)
             self.white.append(sum_iw)
-        return 
-
-        pool = mp.Pool(processes = mp.cpu_count())
-        outputArr = np.zeros((num_iters, 512, 512))
-        sumArr = np.zeros((512, 512))
-        outputArr2 = np.zeros((num_iters, 512, 512))
-        sumArr2 = np.zeros((512, 512))
-        outputArr, outputArr2 = np.array(list(zip(*np.array(pool.map(computation, range(num_iters))))))
-        sumArr = outputArr.sum(0)
-        sumArr2 = outputArr2.sum(0)
-        pool.close()
-        # return sumArr, sumArr2
-
-        with Parallel(n_jobs=-1 if mp.cpu_count() < 60 else 60) as parallel:
-            for en, flu in zip(binned_energies, binned_fluxes):
-        # #INITIALIZING IMAGES
-                self.incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
-                self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                self.white=np.zeros((self.studyDimensions[0],self.studyDimensions[1])) #??? don't need
-                a=parallel(delayed(_parallel_propagate)(currentEnergy, flux) for currentEnergy
-                , flux in zip(en, flu))
-                # intensity, isbd, irbd, ipbd, iiw = list(zip(*parallel(delayed(_parallel_propagate)(currentEnergy, flux) for currentEnergy
-                # , flux in zip(en, flu))))
-        print(a)
-        return
-        # if currentEnergy>self.myDetector.myBinsThresholds[ibin]-self.mySource.myEnergySampling/2:
         
-        energies = [currentEnergy for currentEnergy,_ in self.mySource.mySpectrum]
-        bins = np.searchsorted(energies, self.myDetector.myBinsThresholds)
-        bins.pop(0) if bins[0].size == 0 else bins
-        isbd = np.split(isbd, bins)
-        irbd = np.split(irbd, bins)
-        ipbd = np.split(ipbd, bins)
-        iiw = np.split(iiw, bins)
-
         SampleImage = []
         ReferenceImage = []
         PropagImage = []
         detectedWhite = []
-        #for sample, reference, propagation, white in list(zip(isbd, irbd, ipbd, iiw)):
 
-        for sample, reference, propagation, white in list(zip(isbd, irbd, ipbd, iiw)):
-            sample = sum(sample)
-            reference = sum(reference)
-            propagation = sum(propagation)
-            white = sum(white)
+        for sample, reference, propagation, white in zip(self.imageSampleBeforeDetection,
+            self.imageReferenceBeforeDetection, self.imagePropagBeforeDetection, self.white):
+
             print("Detection sample image")
             SampleImage.append(self.myDetector.detection(sample, effectiveSourceSize))
             print("Detection reference image")
@@ -418,36 +361,9 @@ class Experiment:
                 print("Detection propagation image")
                 PropagImage.append(self.myDetector.detection(propagation,effectiveSourceSize))
             detectedWhite.append(self.myDetector.detection(white, effectiveSourceSize))
-        #####################################################################################
-            return SampleImage, ReferenceImage, PropagImage, detectedWhite
 
+        return SampleImage, ReferenceImage, PropagImage, detectedWhite
 
-        # SampleImage, ReferenceImage, PropagImage, detectedWhite = list(zip(*Parallel(n_jobs=2)(delayed(parallel_detect)(sample, reference, propagation, white) for 
-        # sample, reference, propagation, white in list(zip(isbd, irbd, ipbd, iiw)))))
-        
-        #DETECTION IMAGES FOR ENERGY BIN
-
-
-        #DETECTION IMAGES FOR ENERGY BIN
-        # print("Detection sample image")
-        # SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
-        # print("Detection reference image")
-        # ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
-        # if pointNum==0:
-        #     print("Detection propagation image")
-        #     PropagImage[ibin]=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
-        # detectedWhite[ibin]=self.myDetector.detection(white,effectiveSourceSize)
-        
-        # self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        # self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        # self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        # white = np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        
-        ##########################################################################
-        sumIntensity = sum(intensity)
-        self.meanEnergy=self.meanEnergy/sumIntensity
-
-        return  SampleImage[:-1], ReferenceImage[:-1], PropagImage[:-1], detectedWhite[:-1]
         
     def computeSampleAndReferenceImagesRT(self, pointNum):
         """
@@ -465,34 +381,26 @@ class Experiment:
         """
         
         #INITIALIZING PARAMETERS
-        sumIntensity=0
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThresholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThresholds):
                 raise Exception(f'At least one of your detector bin Threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
             # self.myDetector.myBinsThresholds.insert(0,self.mySource.mySpectrum[0][0])
             self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
-        nbins=len(self.myDetector.myBinsThresholds)
-        SampleImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        ReferenceImage=np.zeros((nbins,self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        PropagImage=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        detectedWhite=np.zeros((nbins, self.myDetector.myDimensions[0]-2*self.myDetector.margins,self.myDetector.myDimensions[1]-2*self.myDetector.margins))
-        
-        
-        #INITIALIZING IMAGES
-        incidentIntensity0=np.ones((self.studyDimensions[0],self.studyDimensions[1]))*(self.meanShotCount)
-        incidentPhi=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-        white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-            
-        #Calculating everything for each energy of the spectrum
-        ibin = 0
-        for currentEnergy, flux in self.mySource.mySpectrum: #TODO enumerate is wrong
+
+        effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
+
+        energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
+        incidentPhi = np.zeros([*self.studyDimensions])
+
+        global _parallel_propagateRT
+
+        def _parallel_propagateRT(currentEnergy, flux):
+
+            #Calculating everything for each energy of the spectrum
             print("\nCurrent Energy: %gkev" %currentEnergy)
             
-            incidentIntensity=incidentIntensity0*flux/self.mySource.totalFlux()
-            incidentIntensity,_ =self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
+            incidentIntensity=np.ones([*self.studyDimensions])*self.meanShotCount*flux/self.mySource.totalFlux()
+            incidentIntensityWhite,_ =self.myAirVolume.setWaveRT(incidentIntensity,1, currentEnergy)
             
             #Take into account the detector scintillator efficiency if given in xml file
             if self.myDetector.myScintillatorMaterial is not None:
@@ -514,20 +422,12 @@ class Experiment:
             
             #Propagation to detector
             print("Propagating waves to detector plane")
-            self.imageSampleAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleAfterSample),phiWaveSampleAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
-            self.imageReferenceAfterRefraction,_,_=self.refraction(abs(self.IntensitySampleBeforeSample),phiWaveSampleAfterMembrane,self.distObjectToDetector,currentEnergy,self.magnification)
-            intensitySampleBeforeDetection=self.imageSampleAfterRefraction
-            intensityReferenceBeforeDetection=self.imageReferenceAfterRefraction
+            intensitySampleBeforeDetection,_,_=self.refraction(abs(self.IntensitySampleAfterSample),phiWaveSampleAfterSample,self.distObjectToDetector,currentEnergy,self.magnification)
+            intensityReferenceBeforeDetection,_,_=self.refraction(abs(self.IntensitySampleBeforeSample),phiWaveSampleAfterMembrane,self.distObjectToDetector,currentEnergy,self.magnification)
             #Plaque attenuation
             if self.myPlaque is not None:
                 intensitySampleBeforeDetection,_=self.myPlaque.setWaveRT(intensitySampleBeforeDetection,1, currentEnergy)
                 intensityReferenceBeforeDetection,_=self.myPlaque.setWaveRT(intensityReferenceBeforeDetection,1, currentEnergy)
-            #Combining intensities for several energies
-            self.imageSampleBeforeDetection+=intensitySampleBeforeDetection
-            self.imageReferenceBeforeDetection+=intensityReferenceBeforeDetection
-            
-            sumIntensity+=np.mean(intensityReferenceBeforeDetection)
-            self.meanEnergy+=currentEnergy*np.mean(intensityReferenceBeforeDetection)
             
             if pointNum==0: #We only do it for the first point
                 print("Setting wave through sample for propag and abs image")
@@ -536,36 +436,65 @@ class Experiment:
                 intensityPropagBeforeDetection=self.imagePropagAfterRefraction
                 if self.myPlaque is not None:
                     intensityPropagBeforeDetection,_=self.myPlaque.setWaveRT(intensityPropagBeforeDetection,1, currentEnergy)
-                    incidentIntensity,_=self.myPlaque.setWaveRT(incidentIntensity,1, currentEnergy)
-                white+=incidentIntensity
-                self.imagePropagBeforeDetection+=intensityPropagBeforeDetection
+                    incidentIntensityWhite,_=self.myPlaque.setWaveRT(incidentIntensity,1, currentEnergy)
+            #  XXX Again, not sure if this is necessary???
+            else:
+                intensityPropagBeforeDetection = incidentIntensityWhite = np.zeros([*self.studyDimensions])
 
-            if currentEnergy>self.myDetector.myBinsThresholds[ibin]-self.mySource.myEnergySampling/2:
-            
-                effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
+            return intensitySampleBeforeDetection, intensityReferenceBeforeDetection, intensityPropagBeforeDetection, incidentIntensityWhite
+
+        splits = np.searchsorted(energies, self.myDetector.myBinsThresholds, side='right')
+        binned_energies = np.split(energies, splits)
+        binned_fluxes = np.split(fluxes, splits)
+        binned_energies = [i for i in binned_energies if i.size]
+        binned_fluxes = [i for i in binned_fluxes if i.size]
+        self.imageSampleBeforeDetection = []
+        self.imageReferenceBeforeDetection = []
+        self.imagePropagBeforeDetection = []
+        self.white = []
+        # TODO only do it with pool if multiprocessing, so only have one experiment file
+        # TODO pass the cpu count as an argument
+        pool = mp.Pool(processes = mp.cpu_count())
+        for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+            binlength = len(bin_en)
+            isbd = np.zeros((binlength, *self.studyDimensions))
+            irbd = np.zeros((binlength, *self.studyDimensions))
+            ipbd = np.zeros((binlength, *self.studyDimensions))
+            iw = np.zeros((binlength, *self.studyDimensions))
+
+            sum_isbd = np.zeros(self.studyDimensions)
+            sum_irbd = np.zeros(self.studyDimensions)
+            sum_ipbd = np.zeros(self.studyDimensions)
+            sum_iw = np.zeros(self.studyDimensions)
+
+            isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagateRT, zip(bin_en, bin_flu))))))
+            sum_isbd = isbd.sum(0)
+            sum_irbd = irbd.sum(0)
+            sum_ipbd = ipbd.sum(0)
+            sum_iw = iw.sum(0)
+            self.imageSampleBeforeDetection.append(sum_isbd)
+            self.imageReferenceBeforeDetection.append(sum_irbd)
+            self.imagePropagBeforeDetection.append(sum_ipbd)
+            self.white.append(sum_iw)
         
-                #DETECTION IMAGES FOR ENERGY BIN
-                print("Detection sample image")
-                SampleImage[ibin]=self.myDetector.detection(self.imageSampleBeforeDetection,effectiveSourceSize)
-                print("Detection reference image")
-                ReferenceImage[ibin]=self.myDetector.detection(self.imageReferenceBeforeDetection,effectiveSourceSize)
-                if pointNum==0:
-                    self.imagePropagBeforeDetection=self.imagePropagBeforeDetection
-                    print("Detection propagation image")
-                    PropagImage[ibin]=self.myDetector.detection(self.imagePropagBeforeDetection,effectiveSourceSize)
-                detectedWhite[ibin]=self.myDetector.detection(white,effectiveSourceSize)
-                
-                self.imageSampleBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                self.imageReferenceBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                self.imagePropagBeforeDetection=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                white=np.zeros((self.studyDimensions[0],self.studyDimensions[1]))
-                ibin += 1
-                
-        self.meanEnergy=self.meanEnergy/sumIntensity
-        print("MeanEnergy", self.meanEnergy)
-                
-        return  SampleImage, ReferenceImage,PropagImage,detectedWhite, self.Dxreal, self.Dyreal
+        SampleImage = []
+        ReferenceImage = []
+        PropagImage = []
+        detectedWhite = []
 
+        for sample, reference, propagation, white in zip(self.imageSampleBeforeDetection,
+            self.imageReferenceBeforeDetection, self.imagePropagBeforeDetection, self.white):
+
+            print("Detection sample image")
+            SampleImage.append(self.myDetector.detection(sample, effectiveSourceSize))
+            print("Detection reference image")
+            ReferenceImage.append(self.myDetector.detection(reference,effectiveSourceSize))
+            if pointNum==0:
+                print("Detection propagation image")
+                PropagImage.append(self.myDetector.detection(propagation,effectiveSourceSize))
+            detectedWhite.append(self.myDetector.detection(white, effectiveSourceSize))
+
+        return SampleImage, ReferenceImage, PropagImage, detectedWhite
     
         
     def saveAllParameters(self,time0,expDict):

@@ -12,7 +12,7 @@ import time
 sys.path.append('CodePython/InputOutput/')
 import os
 from InputOutput.pagailleIO import saveEdf
-Multiprocessing = False
+Multiprocessing = True
 import platform
 if Multiprocessing:
     if platform.system() == 'Windows':
@@ -38,11 +38,11 @@ if __name__ == "__main__":
     # Output filepath to store the result images
     exp_dict['filepath']='A:/'
     # Define algorithm parameters
-    exp_dict['sampleSampling']=11 # MUST BE AN INTEGER
+    exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=1  #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True #TODO doesn't do anything
-    exp_dict['simulation_type']="Fresnel" #"Fresnel" or "RayT" 
+    exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
    
     #************************************************************************
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         if exp_dict['simulation_type']=="Fresnel":
             SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White=experiment.computeSampleAndReferenceImages(pointNum)
         elif exp_dict['simulation_type']=="RayT":
-            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White, Dx, Dy=experiment.computeSampleAndReferenceImagesRT(pointNum)
+            SampleImageTmp, ReferenceImageTmp,PropagImageTmp, White = experiment.computeSampleAndReferenceImagesRT(pointNum)
         else:
             raise Exception("simulation Type not defined: ", exp_dict['simulation_type'])
         Nbin=len(SampleImageTmp)
