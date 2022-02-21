@@ -18,6 +18,8 @@ from refractionFileNumba import fastRefraction
 from getk import getk
 import multiprocess as mp
 from minOversampling import minOversampling
+import platform
+import joblib
 
 class Experiment:
     def __init__(self, exp_dict):
@@ -50,7 +52,8 @@ class Experiment:
         self.imageSampleBeforeDetection=[]
         self.imageReferenceBeforeDetection=[]
         self.imagePropagBeforeDetection=[]
-
+        self.multiprocessing = exp_dict['Multiprocessing']
+        self.cpus = exp_dict['CPUs']
         #Set correct values
         self.defineCorrectValues(exp_dict)
 
@@ -241,9 +244,6 @@ class Experiment:
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.myBinsThresholds) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.myBinsThresholds):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
-            # self.myDetector.myBinsThresholds.insert(0,self.mySource.mySpectrum[0][0])
-            # if self.myDetector.myBinsThresholds[-1] != self.mySource.mySpectrum[-1][0]:
-            #     self.myDetector.myBinsThresholds.append(self.mySource.mySpectrum[-1][0])
     
         effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
         
@@ -320,30 +320,49 @@ class Experiment:
         self.imageReferenceBeforeDetection = []
         self.imagePropagBeforeDetection = []
         self.white = []
-        # TODO only do it with pool if multiprocessing, so only have one experiment file
-        # TODO pass the cpu count as an argument
-        pool = mp.Pool(processes = mp.cpu_count())
-        for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
-            binlength = len(bin_en)
-            isbd = np.zeros((binlength, *self.studyDimensions))
-            irbd = np.zeros((binlength, *self.studyDimensions))
-            ipbd = np.zeros((binlength, *self.studyDimensions))
-            iw = np.zeros((binlength, *self.studyDimensions))
 
-            sum_isbd = np.zeros(self.studyDimensions)
-            sum_irbd = np.zeros(self.studyDimensions)
-            sum_ipbd = np.zeros(self.studyDimensions)
-            sum_iw = np.zeros(self.studyDimensions)
+        if self.multiprocessing:
+            if platform.system() == 'Windows':
+                raise OSError('Multiprocessing not implemented in windows')
+            else:
+                pool = mp.Pool(processes = self.cpus if self.cpus and self.cpus < mp.cpu_count() else mp.cpu_count())
+                for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+                    binlength = len(bin_en)
+                    isbd = np.zeros((binlength, *self.studyDimensions))
+                    irbd = np.zeros((binlength, *self.studyDimensions))
+                    ipbd = np.zeros((binlength, *self.studyDimensions))
+                    iw = np.zeros((binlength, *self.studyDimensions))
 
-            isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagate, zip(bin_en, bin_flu))))))
-            sum_isbd = isbd.sum(0)
-            sum_irbd = irbd.sum(0)
-            sum_ipbd = ipbd.sum(0)
-            sum_iw = iw.sum(0)
-            self.imageSampleBeforeDetection.append(sum_isbd)
-            self.imageReferenceBeforeDetection.append(sum_irbd)
-            self.imagePropagBeforeDetection.append(sum_ipbd)
-            self.white.append(sum_iw)
+                    sum_isbd = np.zeros(self.studyDimensions)
+                    sum_irbd = np.zeros(self.studyDimensions)
+                    sum_ipbd = np.zeros(self.studyDimensions)
+                    sum_iw = np.zeros(self.studyDimensions)
+
+                    isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagate, zip(bin_en, bin_flu))))))
+                    sum_isbd = isbd.sum(0)
+                    sum_irbd = irbd.sum(0)
+                    sum_ipbd = ipbd.sum(0)
+                    sum_iw = iw.sum(0)
+                    self.imageSampleBeforeDetection.append(sum_isbd)
+                    self.imageReferenceBeforeDetection.append(sum_irbd)
+                    self.imagePropagBeforeDetection.append(sum_ipbd)
+                    self.white.append(sum_iw)
+        else:
+            for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+                sum_isbd = np.zeros([*self.studyDimensions])
+                sum_irbd = np.zeros([*self.studyDimensions])
+                sum_ipbd = np.zeros([*self.studyDimensions])
+                sum_iw = np.zeros([*self.studyDimensions])
+                for energy, flux in zip(bin_en, bin_flu):
+                    isbd, irbd, ipbd, iw = _parallel_propagate(energy, flux)
+                    sum_isbd += isbd
+                    sum_irbd += irbd
+                    sum_ipbd += ipbd
+                    sum_iw += iw
+                self.imageSampleBeforeDetection.append(sum_isbd)
+                self.imageReferenceBeforeDetection.append(sum_irbd)
+                self.imagePropagBeforeDetection.append(sum_ipbd)
+                self.white.append(sum_iw)
         
         SampleImage = []
         ReferenceImage = []
@@ -389,7 +408,7 @@ class Experiment:
 
         effectiveSourceSize=self.mySource.mySize*self.distObjectToDetector/(self.distSourceToMembrane+self.distMembraneToObject)/self.myDetector.myPixelSize*self.sampling #FWHM
 
-        energies, fluxes = list(zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum]))
+        energies, fluxes = zip(*[(currentEnergy, flux) for currentEnergy, flux in self.mySource.mySpectrum])
         incidentPhi = np.zeros([*self.studyDimensions])
 
         global _parallel_propagateRT
@@ -452,31 +471,50 @@ class Experiment:
         self.imageReferenceBeforeDetection = []
         self.imagePropagBeforeDetection = []
         self.white = []
-        # TODO only do it with pool if multiprocessing, so only have one experiment file
-        # TODO pass the cpu count as an argument
-        pool = mp.Pool(processes = mp.cpu_count())
-        for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
-            binlength = len(bin_en)
-            isbd = np.zeros((binlength, *self.studyDimensions))
-            irbd = np.zeros((binlength, *self.studyDimensions))
-            ipbd = np.zeros((binlength, *self.studyDimensions))
-            iw = np.zeros((binlength, *self.studyDimensions))
 
-            sum_isbd = np.zeros(self.studyDimensions)
-            sum_irbd = np.zeros(self.studyDimensions)
-            sum_ipbd = np.zeros(self.studyDimensions)
-            sum_iw = np.zeros(self.studyDimensions)
+        if self.multiprocessing:
+            if platform.system() == 'Windows':
+                raise OSError('Multiprocessing not implemented in windows')
+            else:
+                pool = mp.Pool(processes = self.cpus if self.cpus and self.cpus < mp.cpu_count() else mp.cpu_count())
+                for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+                    binlength = len(bin_en)
+                    isbd = np.zeros((binlength, *self.studyDimensions))
+                    irbd = np.zeros((binlength, *self.studyDimensions))
+                    ipbd = np.zeros((binlength, *self.studyDimensions))
+                    iw = np.zeros((binlength, *self.studyDimensions))
 
-            isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagateRT, zip(bin_en, bin_flu))))))
-            sum_isbd = isbd.sum(0)
-            sum_irbd = irbd.sum(0)
-            sum_ipbd = ipbd.sum(0)
-            sum_iw = iw.sum(0)
-            self.imageSampleBeforeDetection.append(sum_isbd)
-            self.imageReferenceBeforeDetection.append(sum_irbd)
-            self.imagePropagBeforeDetection.append(sum_ipbd)
-            self.white.append(sum_iw)
-        
+                    sum_isbd = np.zeros(self.studyDimensions)
+                    sum_irbd = np.zeros(self.studyDimensions)
+                    sum_ipbd = np.zeros(self.studyDimensions)
+                    sum_iw = np.zeros(self.studyDimensions)
+
+                    isbd, irbd, ipbd, iw = np.array(list(zip(*np.array(pool.starmap(_parallel_propagateRT, zip(bin_en, bin_flu))))))
+                    sum_isbd = isbd.sum(0)
+                    sum_irbd = irbd.sum(0)
+                    sum_ipbd = ipbd.sum(0)
+                    sum_iw = iw.sum(0)
+                    self.imageSampleBeforeDetection.append(sum_isbd)
+                    self.imageReferenceBeforeDetection.append(sum_irbd)
+                    self.imagePropagBeforeDetection.append(sum_ipbd)
+                    self.white.append(sum_iw)
+        else:
+            for bin_en, bin_flu in zip(binned_energies, binned_fluxes):
+                sum_isbd = np.zeros([*self.studyDimensions])
+                sum_irbd = np.zeros([*self.studyDimensions])
+                sum_ipbd = np.zeros([*self.studyDimensions])
+                sum_iw = np.zeros([*self.studyDimensions])
+                for energy, flux in zip(bin_en, bin_flu):
+                    isbd, irbd, ipbd, iw = _parallel_propagateRT(energy, flux)
+                    sum_isbd += isbd
+                    sum_irbd += irbd
+                    sum_ipbd += ipbd
+                    sum_iw += iw
+                self.imageSampleBeforeDetection.append(sum_isbd)
+                self.imageReferenceBeforeDetection.append(sum_irbd)
+                self.imagePropagBeforeDetection.append(sum_ipbd)
+                self.white.append(sum_iw)
+
         SampleImage = []
         ReferenceImage = []
         PropagImage = []

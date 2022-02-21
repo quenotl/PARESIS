@@ -43,6 +43,8 @@ if __name__ == "__main__":
     exp_dict['margin']=10 #with Fresnel there might be an aliasing issue so we need to extend very slightly the image for calculations
     save=True #TODO doesn't do anything
     exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
+    exp_dict['Multiprocessing'] = True
+    exp_dict['CPUs'] = None
 
     if not os.path.isdir(exp_dict['filepath']):
         raise ValueError('Path not found')
