@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # Define experiment 
     exp_dict['experimentName']="SIMAP_SpheresInTube"
     # Output filepath to store the result images
-    exp_dict['filepath']='A:/'
+    exp_dict['filepath']='/Users/chris/Documents/'
     # Define algorithm parameters
     exp_dict['sampleSampling']=2 # MUST BE AN INTEGER
     exp_dict['nbExpPoints']=1  #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane
@@ -44,6 +44,8 @@ if __name__ == "__main__":
     save=True #TODO doesn't do anything
     exp_dict['simulation_type']="RayT" #"Fresnel" or "RayT" 
 
+    if not os.path.isdir(exp_dict['filepath']):
+        raise ValueError('Path not found')
    
     #************************************************************************
     now=datetime.datetime.now()
