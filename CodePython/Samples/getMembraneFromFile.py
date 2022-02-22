@@ -5,15 +5,13 @@ Created on Wed Jan 29 16:47:44 2020
 
 @author: quenot
 """
-
 import numpy as np
-from InputOutput.pagailleIO import saveEdf,openImage
 from matplotlib import pyplot as plt
 import json
-from InputOutput.pagailleIO import saveEdf,openImage
 import glob
 import os
 import time
+from InputOutput.pagailleIO import saveEdf, openImage
 
 def getMembraneFromFile(myMembraneFile,studyDimensions,studyPixelSize, oversamp, numPoint):
     

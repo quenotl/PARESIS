@@ -9,7 +9,8 @@ import numpy as np
 from getk import getk
 from numba import njit
 
-def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnification,studyPixelSize):
+
+def fastRefraction(intensityRefracted, phi, propagationDistance, Energy, magnification, studyPixelSize):
     """
     Calculates the intensity after propagation from the angles of refraction
 
@@ -30,42 +31,46 @@ def fastRefraction(intensityRefracted, phi, propagationDistance,Energy, magnific
         Dy (2D numpy array): Real displacement map calculated.
 
     """
-    #Get usefull experimental constants
+    # Get usefull experimental constants
     k = getk(1000*Energy)
-    Nx,Ny=intensityRefracted.shape
-    margin2=10
-    
-    #Get from the phase information to the displacement in pixel after propagation
-    dphix,dphiy=np.gradient(phi,studyPixelSize*1e-6, edge_order=2)
-    Dx=dphix*propagationDistance/k/(studyPixelSize*1e-6*magnification)
-    Dy=dphiy*propagationDistance/k/(studyPixelSize*1e-6*magnification)
-    
-    #Get rid of aberrant values or values that wont influence the result
-    Dx[abs(Dx)<1e-12]=0
-    Dy[abs(Dy)<1e-12]=0
-    intensityRefracted[abs(Dx)>1e3]=0
-    intensityRefracted[abs(Dy)>1e3]=0
-    Dx[abs(Dx)>1e3]=0
-    Dy[abs(Dy)>1e3]=0
-    Dx=np.pad(Dx,margin2,mode='constant')
-    Dy=np.pad(Dy,margin2,mode='constant')
-    intensityRefracted=np.pad(intensityRefracted,margin2,mode='constant')
-    
-    #initialize the resulting intensity matrix with a margin for the calculation
-    intensityRefracted2=np.zeros((Nx+2*margin2, Ny+2*margin2))
+    Nx, Ny = intensityRefracted.shape
+    margin2 = 10
 
-    #Call the fast function for the loop on all the pixels
-    intensityRefracted2 = fastloopNumba(Nx+2*margin2, Ny+2*margin2,intensityRefracted,intensityRefracted2,Dy,Dx)
-    intensityRefracted2 = intensityRefracted2[margin2:Nx+margin2,margin2:Ny+margin2]
-    
-    #check for errors in the calculation (there shouldn't be but we never know)
+    # Get from the phase information to the displacement in pixel after propagation
+    dphix, dphiy = np.gradient(phi, studyPixelSize*1e-6, edge_order=2)
+    Dx = dphix*propagationDistance/k/(studyPixelSize*1e-6*magnification)
+    Dy = dphiy*propagationDistance/k/(studyPixelSize*1e-6*magnification)
+
+    # Get rid of aberrant values or values that wont influence the result
+    Dx[abs(Dx) < 1e-12] = 0
+    Dy[abs(Dy) < 1e-12] = 0
+    intensityRefracted[abs(Dx) > 1e3] = 0
+    intensityRefracted[abs(Dy) > 1e3] = 0
+    Dx[abs(Dx) > 1e3] = 0
+    Dy[abs(Dy) > 1e3] = 0
+    Dx = np.pad(Dx, margin2, mode='constant')
+    Dy = np.pad(Dy, margin2, mode='constant')
+    intensityRefracted = np.pad(intensityRefracted, margin2, mode='constant')
+
+    # initialize the resulting intensity matrix with a margin for the calculation
+    intensityRefracted2 = np.zeros((Nx+2*margin2, Ny+2*margin2))
+
+    # Call the fast function for the loop on all the pixels
+    intensityRefracted2 = fastloopNumba(
+        Nx+2*margin2, Ny+2*margin2, intensityRefracted, intensityRefracted2, Dy, Dx)
+    intensityRefracted2 = intensityRefracted2[margin2:Nx +
+                                              margin2, margin2:Ny+margin2]
+
+    # check for errors in the calculation (there shouldn't be but we never know)
     if np.isnan(intensityRefracted2).any() or np.any((abs(intensityRefracted2) > 1e50)):
-        raise Exception("The calculated intensity refractive includes some nans or insane values")
-    
-    return intensityRefracted2,Dx, Dy    
+        raise Exception(
+            "The calculated intensity refractive includes some nans or insane values")
+
+    return intensityRefracted2, Dx, Dy
+
 
 @njit
-def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx):
+def fastloopNumba(Nx, Ny, intensityRefracted, intensityRefracted2, Dy, Dx):
     """
     Accelerated part of the refraction calculation
 
@@ -83,40 +88,51 @@ def fastloopNumba(Nx, Ny,intensityRefracted,intensityRefracted2,Dy,Dx):
     """
     for i in range(Nx):
         for j in range(Ny):
-            Iij=intensityRefracted[i,j]
-            Dxtmp=Dx[i,j]
-            Dytmp=Dy[i,j]
+            Iij = intensityRefracted[i, j]
+            Dxtmp = Dx[i, j]
+            Dytmp = Dy[i, j]
             if not Dxtmp and not Dytmp:
-                intensityRefracted2[i,j]+=Iij
+                intensityRefracted2[i, j] += Iij
                 continue
-            inew=i
-            jnew=j
-            #Calculating displacement bigger than a pixel
-            if abs(Dxtmp)>1:
-                inew=i+int(Dxtmp)
-                Dxtmp=Dxtmp-int(Dxtmp)
-            if abs(Dytmp)>1:
-                jnew=j+int(Dytmp)
-                Dytmp=Dytmp-int(Dytmp)
-            #Calculating sub-pixel displacement
-            if 0<=inew<Nx and 0<=jnew<Ny:
-                intensityRefracted2[inew,jnew]+=Iij*(1-abs(Dxtmp))*(1-abs(Dytmp))
-                if inew<Nx-1 and Dxtmp>=0:
-                    if jnew<Ny-1 and Dytmp>=0:
-                        intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-Dytmp)
-                        intensityRefracted2[inew+1,jnew+1]+=Iij*Dxtmp*Dytmp
-                        intensityRefracted2[inew,jnew+1]+=Iij*(1-Dxtmp)*Dytmp
-                    if jnew>0 and Dytmp<0:
-                        intensityRefracted2[inew+1,jnew]+=Iij*Dxtmp*(1-abs(Dytmp))
-                        intensityRefracted2[inew+1,jnew-1]+=Iij*Dxtmp*abs(Dytmp)
-                        intensityRefracted2[inew,jnew-1]+=Iij*(1-Dxtmp)*abs(Dytmp)
-                if inew>0 and Dxtmp<0:
-                    if jnew<Ny-1 and Dytmp>=0:
-                        intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-Dytmp)
-                        intensityRefracted2[inew-1,jnew+1]+=Iij*abs(Dxtmp)*Dytmp
-                        intensityRefracted2[inew,jnew+1]+=Iij*(1-abs(Dxtmp))*Dytmp
-                    if jnew>0 and Dytmp<0:
-                        intensityRefracted2[inew-1,jnew]+=Iij*abs(Dxtmp)*(1-abs(Dytmp))
-                        intensityRefracted2[inew-1,jnew-1]+=Iij*Dxtmp*Dytmp
-                        intensityRefracted2[inew,jnew-1]+=Iij*(1-abs(Dxtmp))*abs(Dytmp)
+            inew = i
+            jnew = j
+            # Calculating displacement bigger than a pixel
+            if abs(Dxtmp) > 1:
+                inew = i+int(Dxtmp)
+                Dxtmp = Dxtmp-int(Dxtmp)
+            if abs(Dytmp) > 1:
+                jnew = j+int(Dytmp)
+                Dytmp = Dytmp-int(Dytmp)
+            # Calculating sub-pixel displacement
+            if 0 <= inew < Nx and 0 <= jnew < Ny:
+                intensityRefracted2[inew, jnew] += Iij * \
+                    (1-abs(Dxtmp))*(1-abs(Dytmp))
+                if inew < Nx-1 and Dxtmp >= 0:
+                    if jnew < Ny-1 and Dytmp >= 0:
+                        intensityRefracted2[inew+1,
+                                            jnew] += Iij*Dxtmp*(1-Dytmp)
+                        intensityRefracted2[inew+1, jnew+1] += Iij*Dxtmp*Dytmp
+                        intensityRefracted2[inew, jnew +
+                                            1] += Iij*(1-Dxtmp)*Dytmp
+                    if jnew > 0 and Dytmp < 0:
+                        intensityRefracted2[inew+1,
+                                            jnew] += Iij*Dxtmp*(1-abs(Dytmp))
+                        intensityRefracted2[inew+1, jnew -
+                                            1] += Iij*Dxtmp*abs(Dytmp)
+                        intensityRefracted2[inew, jnew -
+                                            1] += Iij*(1-Dxtmp)*abs(Dytmp)
+                if inew > 0 and Dxtmp < 0:
+                    if jnew < Ny-1 and Dytmp >= 0:
+                        intensityRefracted2[inew-1,
+                                            jnew] += Iij*abs(Dxtmp)*(1-Dytmp)
+                        intensityRefracted2[inew-1, jnew +
+                                            1] += Iij*abs(Dxtmp)*Dytmp
+                        intensityRefracted2[inew, jnew +
+                                            1] += Iij*(1-abs(Dxtmp))*Dytmp
+                    if jnew > 0 and Dytmp < 0:
+                        intensityRefracted2[inew-1,
+                                            jnew] += Iij*abs(Dxtmp)*(1-abs(Dytmp))
+                        intensityRefracted2[inew-1, jnew-1] += Iij*Dxtmp*Dytmp
+                        intensityRefracted2[inew, jnew -
+                                            1] += Iij*(1-abs(Dxtmp))*abs(Dytmp)
     return intensityRefracted2

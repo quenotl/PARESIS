@@ -17,56 +17,66 @@ from numpy import pi
 from refractionFileNumba import fastRefraction
 from getk import getk
 import multiprocess as mp
-from minOversampling import minOversampling
+from min_oversampling import min_oversampling
 import platform
-import joblib
+# import joblib
+
 
 class Experiment:
     def __init__(self, exp_dict):
-        """Experiment class constructor.
-            
-        Args:
-            exp_dict (dict): dictionary of simulation algorithm parameters
+        """Initialization of Experiment
+
+        Parameters
+        ----------
+        exp_dict : dict
+            Dictionary containing the parameters for the experiment
+
+        Raises
+        ------
+        ValueError
+            If the oversampling factor doesn't satisfy the minimum sampling
+            requirement
         """
-        self.xmlExperimentFileName="xmlFiles/Experiment.xml"
+        self.xmlExperimentFileName = "xmlFiles/Experiment.xml"
         self.xmldoc = minidom.parse(self.xmlExperimentFileName)
-        self.name=exp_dict['experimentName']
-        self.distSourceToMembrane=0
-        self.distMembraneToObject=0
-        self.distObjectToDetector=0
-        self.mySampleType=""
-        self.sampling=exp_dict['sampleSampling']
-        self.studyPixelSize=0.
-        self.studyDimensions=(0.,0.)
-        self.mySampleofInterest=None
-        self.myDetector=None
-        self.mySource=None
-        self.myMembrane=None
-        self.myPlaque=None
-        self.myAirVolume=None
-        self.simulation_type=exp_dict['simulation_type']
-        self.meanShotCount=0
-        self.meanEnergy=0
-        self.Dxreal=[]
-        self.Dyreal=[]
-        self.imageSampleBeforeDetection=[]
-        self.imageReferenceBeforeDetection=[]
-        self.imagePropagBeforeDetection=[]
+        self.name = exp_dict['experimentName']
+        self.distSourceToMembrane = 0
+        self.distMembraneToObject = 0
+        self.distObjectToDetector = 0
+        self.mySampleType = ""
+        self.sampling = exp_dict['sampleSampling']
+        self.studyPixelSize = 0.
+        self.studyDimensions = (0., 0.)
+        self.mySampleofInterest = None
+        self.myDetector = None
+        self.mySource = None
+        self.myMembrane = None
+        self.myPlaque = None
+        self.myAirVolume = None
+        self.simulation_type = exp_dict['simulation_type']
+        self.meanShotCount = 0
+        self.meanEnergy = 0
+        self.Dxreal = []
+        self.Dyreal = []
+        self.imageSampleBeforeDetection = []
+        self.imageReferenceBeforeDetection = []
+        self.imagePropagBeforeDetection = []
+        self.white = []
         self.multiprocessing = exp_dict['Multiprocessing']
         self.cpus = exp_dict['CPUs']
-        #Set correct values
+        # Set correct values
         self.defineCorrectValues(exp_dict)
 
         self.myDetector.defineCorrectValuesDetector()
         self.mySource.defineCorrectValuesSource()
         self.mySampleofInterest.defineCorrectValuesSample()
         self.myAirVolume.defineCorrectValuesSample()
-        self.myAirVolume.myThickness=(self.distSourceToMembrane+self.distObjectToDetector+self.distMembraneToObject)*1e6
+        self.myAirVolume.myThickness = (self.distSourceToMembrane+self.distObjectToDetector+self.distMembraneToObject)*1e6
         if self.myPlaque is not None:
             self.myPlaque.defineCorrectValuesSample()
         self.myMembrane.defineCorrectValuesSample()
         
-        self.magnification=(self.distSourceToMembrane+self.distObjectToDetector+self.distMembraneToObject)/(self.distSourceToMembrane+self.distMembraneToObject)
+        self.magnification = (self.distSourceToMembrane+self.distObjectToDetector+self.distMembraneToObject)/(self.distSourceToMembrane+self.distMembraneToObject)
         self.getStudyDimensions()
     
         #Set experiment data
@@ -86,7 +96,7 @@ class Experiment:
         if self.myDetector.myScintillatorMaterial is not None:
             self.myDetector.getBeta(self.mySource.mySpectrum)
 
-        min_oversampling = max([minOversampling(self.distObjectToDetector, self.distSourceToMembrane+self.distMembraneToObject, energy, self.myDetector.myPixelSize) for energy,_ in self.mySource.mySpectrum]) \
+        min_oversampling = max([min_oversampling(self.distObjectToDetector, self.distSourceToMembrane+self.distMembraneToObject, energy, self.myDetector.myPixelSize) for energy,_ in self.mySource.mySpectrum]) \
             if self.simulation_type == 'Fresnel' else 2
         # if self.sampling is None: #TODO get this bit working so that None gives the minimum oversampling
         #     self.sampling = min_oversampling
@@ -171,8 +181,8 @@ class Experiment:
         self.precision=(self.myDetector.myPixelSize/self.sampling/self.distObjectToDetector)
         self.studyDimensions=self.myDetector.myDimensions*int(self.sampling)
         self.studyPixelSize=self.myDetector.myPixelSize/self.sampling/self.magnification
-        
-    
+
+
     def wavePropagation(self, waveToPropagate, propagationDistance, Energy, magnification):
         """
         Propagation of the wave 
@@ -224,7 +234,7 @@ class Experiment:
 
         """
         intensityRefracted2, Dx, Dy = fastRefraction(intensityRefracted, phi, propagationDistance, Energy, magnification, self.studyPixelSize)
-        return intensityRefracted2,Dx, Dy    
+        return intensityRefracted2, Dx, Dy
     
     def computeSampleAndReferenceImages(self, pointNum):
         """
@@ -316,10 +326,6 @@ class Experiment:
         binned_fluxes = np.split(fluxes, splits)
         binned_energies = [i for i in binned_energies if i.size]
         binned_fluxes = [i for i in binned_fluxes if i.size]
-        self.imageSampleBeforeDetection = []
-        self.imageReferenceBeforeDetection = []
-        self.imagePropagBeforeDetection = []
-        self.white = []
 
         if self.multiprocessing:
             if platform.system() == 'Windows':
