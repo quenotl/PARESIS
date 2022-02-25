@@ -28,9 +28,9 @@ if __name__ == "__main__":
     
     ## PARAMETERS TO SET
     # Define experiment 
-    exp_dict['experimentName']="SIMAP_SpheresInTube"
+    exp_dict['experimentName']="Fil_Nylon_ID17"
     # Output filepath to store the result images
-    exp_dict['filepath']='../Results/SIMAP_SpheresInTube/'
+    exp_dict['filepath']='../Results/Fil_Nylon_ID17/'
     # Define algorithm parameters
     exp_dict['overSampling']=2 # MUST BE AN INTEGER - >2 for ray-tracing model and even more for Fresnel (cf usefullScripts/getSamplingFactor.py)
     exp_dict['nbExpPoints']=1 #number of pair of acquisitions (Ir, Is) simulated with different positions of the membrane

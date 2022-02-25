@@ -49,7 +49,6 @@ class Sample:
                 self.myGeometryFunction=self.getText(currentSample.getElementsByTagName("myGeometryFunction")[0])
                                 
                 if self.myGeometryFunction=="getMembraneFromFile":
-                    self.myMembraneFile=self.getText(currentSample.getElementsByTagName("myMembraneFile")[0])
                     self.myPMMAThickness=float(self.getText(currentSample.getElementsByTagName("myPMMAThickness")[0]))
                 if self.myGeometryFunction=="getMembraneSegmentedFromFile":
                     self.myMeanSphereRadius=float(self.getText(currentSample.getElementsByTagName("myMeanSphereRadius")[0]))

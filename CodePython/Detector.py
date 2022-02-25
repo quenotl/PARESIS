@@ -199,6 +199,16 @@ def resize(imageToResize,sizeX, sizeY):
 
 
 def create_gaussian_shape(sigma):
+    """
+    Creates a gaussian shape for simulating source OTF or detector PSF
+
+    Args:
+        sigma (float): Gaussian standard deviation in pixels.
+
+    Returns:
+        2D numpy array: squre array with normalized gaussian shape of standard deviation sigma.
+
+    """
     dim=round(sigma*3)*2+1
     
     Qx, Qy = np.meshgrid((np.arange(0, dim) - np.floor(dim / 2) ), (np.arange(0, dim) - np.floor(dim / 2)) ) #frequency ranges of the images in fqcy space

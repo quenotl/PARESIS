@@ -289,14 +289,12 @@ class Experiment:
         #INITIALIZING PARAMETERS
         sumIntensity=0
         ibin=0
-        ien=0
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.det_param["myBinsThersholds"]) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.det_param["myBinsThersholds"]):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
             # self.myDetector.det_param["myBinsThersholds"].insert(0,self.mySource.mySpectrum[0][0])
             self.myDetector.det_param["myBinsThersholds"].append(self.mySource.mySpectrum[-1][0])
         nbins=len(self.myDetector.det_param["myBinsThersholds"])
-        binsThresholds=self.myDetector.det_param["myBinsThersholds"]
         SampleImage=np.zeros((nbins,self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
         ReferenceImage=np.zeros((nbins,self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
         PropagImage=np.zeros((nbins, self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
@@ -420,14 +418,12 @@ class Experiment:
         #INITIALIZING PARAMETERS
         sumIntensity=0
         ibin=0
-        ien=0
         if pointNum==0:
             if any(elem<self.mySource.mySpectrum[0][0] for elem in self.myDetector.det_param["myBinsThersholds"]) or any(elem>self.mySource.mySpectrum[-1][0] for elem in self.myDetector.det_param["myBinsThersholds"]):
                 raise Exception(f'At least one of your detector bin threshold is outside your source spectrum. \nYour source spectrum ranges from {self.mySource.mySpectrum[0][0]} to {self.mySource.mySpectrum[-1][0]}')
             # self.myDetector.det_param["myBinsThersholds"].insert(0,self.mySource.mySpectrum[0][0])
             self.myDetector.det_param["myBinsThersholds"].append(self.mySource.mySpectrum[-1][0])
         nbins=len(self.myDetector.det_param["myBinsThersholds"])
-        binsThresholds=self.myDetector.det_param["myBinsThersholds"]
         SampleImage=np.zeros((nbins,self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
         ReferenceImage=np.zeros((nbins,self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
         PropagImage=np.zeros((nbins, self.myDetector.det_param['myDimensions'][0],self.myDetector.det_param['myDimensions'][1]))
@@ -545,7 +541,6 @@ class Experiment:
 
         f.write("EXPERIMENT PARAMETERS - "+expDict['simulation_type']+" - "+str(expDict['expID']))
         
-        
         for cle, valeur in self.exp_dict.items():
             if cle.split('_')[-1]!='unit':
                 if cle+"_unit" in self.exp_dict:
@@ -556,11 +551,6 @@ class Experiment:
             
         f.write("\n\nEntire computing time: %gs" %(time.time()-time0))   
 
-        # f.write("\n\nDistances:")
-        # f.write("\nDistance source to membrane: %gm" %self.exp_dict['distSourceToMembrane'])
-        # f.write("\nDistance membrane to sample: %gm" %self.exp_dict['distMembraneToObject'])
-        # f.write("\nDistance sample to detector: %gm" %self.exp_dict['distObjectToDetector'])
-
         f.write("\n\nSource parameters:")
         f.write("\nSource name: %s" %self.mySource.myName)
         for cle, valeur in self.mySource.source_dict.items():
@@ -570,14 +560,6 @@ class Experiment:
                     f.write(f'\n    {cle}: {valeur} {self.mySource.source_dict[cleUnit]}')
                 else:
                     f.write(f'\n    {cle}: {valeur}')        
-        # f.write("\nSource type: %s" %self.mySource.source_dict['myType'])
-        # f.write("\nSource size: %gum" %self.mySource.source_dict["mySize"])
-        # if self.mySource.myType=="Monochromatic":
-        #     f.write("\nSource energy: %gkev" %(self.mySource.mySpectrum[0][0]))
-        # if self.mySource.myType=="Polychromatic":
-        #     f.write("\nSource voltage: %gkVp" %self.mySource.source_dict["myVoltage"])
-        #     f.write("\nSource spectrum energy overSampling: %gkeV" %self.mySource.source_dict["myEnergySampling"])
-        #     f.write("\nMean energy detected in the reference image: %gkeV" %self.exp_dict['meanEnergy'])
         
         f.write("\n\nDetector parameters:")
         f.write("\nDetector name: %s"%self.myDetector.myName)
@@ -588,14 +570,7 @@ class Experiment:
                     f.write(f'\n    {cle}: {valeur} {self.myDetector.det_param[cleUnit]}')
                 else:
                     f.write(f'\n    {cle}: {valeur}')     
-        # f.write("\nDetector dimensions:"+str(self.myDetector.det_param['myDimensions'][0])+"x"+str(self.myDetector.det_param['myDimensions'][1])+"pix")
-        # f.write("\nDetector pixels size: %gum" %self.myDetector.det_param['myPixelSize'])
-        # f.write("\nDetector PSF: %gpix" %self.myDetector.myPSF)
-        # if self.myDetector.det_param["myBinsThersholds"] is not None:
-        #     f.write(f'\nDetector bins thresholds: {self.myDetector.det_param["myBinsThersholds"]}keV')
-        # if self.myDetector.det_param['myScintillatorMaterial'] is not None:
-        #     f.write(f"  Scintillator {self.myDetector.det_param['myScintillatorMaterial']} of {self.myDetector.det_param['myScintillatorThickness']}um")
-        
+                    
         f.write("\n\nSample informations")
         f.write("\nSample name: %s" %self.mySampleofInterest.myName)
         f.write("\nSample type: %s" %self.mySampleType)
@@ -604,9 +579,6 @@ class Experiment:
             for cle, valeur in self.mySampleofInterest.geom_parameters.items():
                 f.write(f'\n    {cle}: {valeur[0]} {valeur[1]}')
                 
-        # if self.mySampleofInterest.myGeometryFunction=="CreateSampleCylindre":
-        #     f.write("\nWire's radius: %s" %self.mySampleofInterest.myRadius)
-        #     f.write("\nWire's material: %s" %self.mySampleofInterest.myMaterials)
         if self.mySampleofInterest.myGeometryFunction=="openContrastPhantom":
             f.write("\nContrast Phantom geometry folder: %s" %self.mySampleofInterest.myGeometryFolder)
         
@@ -625,15 +597,6 @@ class Experiment:
             f.write("\n\nDetectors protection Plate")
             f.write("Plate thickness: %s" %self.myPlate.myThickness)
             f.write("Plate Material: %s" %self.myPlate.myMaterials)
-
-            
-        # f.write("\n\nOther study parameters:")
-        # f.write("\nPrecision of the calculation: %gurad" %self.precision)
-        # f.write("\nOveroverSampling Factor: %g" %self.exp_dict['overSampling'])
-        # f.write("\nStudy dimensions: "+str(self.exp_dict['studyDimensions'][0])+"x"+str(self.exp_dict['studyDimensions'][1])+"pix")
-        # f.write("\nStudy pixel size: %gum" %self.exp_dict['studyPixelSize'])
-        # f.write("\nMean shot count: %g" %(self.exp_dict['meanShotCount']))        
-        # f.write("\nNumber of points: %g" %(expDict['nbExpPoints']))    
         
         f.close()
         

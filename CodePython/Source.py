@@ -255,8 +255,8 @@ if __name__ == "__main__":
     # sp.Spek.make_matl(matl_name=name, matl_density=1.0, chemical_formula=composition,matl_comment=comment)
     
     
-    s = sp.Spek(kvp=30,th=12, targ='Mo', dk=0.5)
-    # s.filter('Air', 800)
+    s = sp.Spek(kvp=20,th=12, targ='Mo', dk=0.5)
+    s.filter('Air', 800)
     # s.filter('Water', 20)
     # s.filter('C', 0.2)
     # s.filter('Cu', 0.05)

@@ -93,7 +93,7 @@
         <name>ContrastPhantomSpectralClinic</name>
         <myType>sample_of_interest</myType>
         <myGeometryFunction>loadSampleGeometryFromImages</myGeometryFunction>
-        <myGeometryFolder>ContrastPhantom/CP_pixsize25um_1000x3000_angle50deg/</myGeometryFolder>
+        <myGeometryFolder>Samples/ContrastPhantom/CP_pixsize25um_1000x3000_angle50deg/</myGeometryFolder>
         <myMaterials>CorticalBoneCB250pct,Bone,CorticalBoneCB230pct,SolidWater,Adipose,InnerBone,Breast,Liver,CorticalBoneSB3,Brain,Air,Air,SolidWater</myMaterials>
     </sample>
     
