@@ -117,10 +117,10 @@ class Source:
                 sumW=0
                 for i in range(len(spectrum[0])):
                     if spectrum[1][i]/fl>0.0001:
-                        self.mySpectrum.append((spectrum[0][i],spectrum[1][i]/fl*self.source_dict["myEnergySampling"]))
+                        self.mySpectrum.append((spectrum[0][i],spectrum[1][i]/fl))#*self.source_dict["myEnergySampling"]))
                         energyplot.append(spectrum[0][i])
-                        weightplot.append(spectrum[1][i]/fl*self.source_dict["myEnergySampling"])
-                        sumW+=spectrum[1][i]/fl*self.source_dict["myEnergySampling"]
+                        weightplot.append(spectrum[1][i]/fl)#*self.source_dict["myEnergySampling"])
+                        sumW+=spectrum[1][i]/fl#*self.source_dict["myEnergySampling"]
                 
                 plt.figure()
                 plt.plot(energyplot,weightplot)
@@ -128,7 +128,7 @@ class Source:
                 plt.title("Sampled source spectrum"+ str(sumW))
                 plt.show()
             
-            else:
+            if self.spectrumFromXls:
                 rightUnitScale=1
                 if self.source_dict["energyUnit"]=="eV":
                     rightUnitScale=0.001
@@ -217,8 +217,10 @@ class Source:
                     energyplot.append(energyBin/weightBin)
                     weightplot.append(weightBin)
                 
+                totFlux=0
                 for i in range(len(energyplot)):
                     flux=weightplot[i]/totWeight
+                    totFlux+=flux
                     if flux>0.001:
                         self.mySpectrum.append((energyplot[i],flux))
                 
@@ -234,7 +236,7 @@ class Source:
                 plt.figure()
                 plt.plot(energyplot,weightplot)
                 plt.xlabel('Energy (keV)')
-                plt.title("Xls source spectrum")
+                plt.title(f"Xls source spectrum total flux {totFlux}")
                 plt.show()
                     
         return
