@@ -166,7 +166,11 @@ class Experiment:
                 
                 for node in experiment.childNodes:
                     if node.localName=="inVacuum":
-                        self.exp_dict['inVacuum']=bool(self.getText(experiment.getElementsByTagName("inVacuum")[0]))
+                        text=self.getText(experiment.getElementsByTagName("inVacuum")[0])
+                        if text=="True":
+                            self.exp_dict['inVacuum']=True
+                        else:
+                            self.exp_dict['inVacuum']=False
                     if node.localName=="PlateName":
                         self.myPlate=AnalyticalSample()
                         self.myPlate.myName=self.getText(experiment.getElementsByTagName("PlateName")[0])
