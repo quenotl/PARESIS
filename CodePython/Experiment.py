@@ -171,9 +171,9 @@ class Experiment:
                             self.exp_dict['inVacuum']=True
                         else:
                             self.exp_dict['inVacuum']=False
-                    if node.localName=="PlateName":
+                    if node.localName=="plateName":
                         self.myPlate=AnalyticalSample()
-                        self.myPlate.myName=self.getText(experiment.getElementsByTagName("PlateName")[0])
+                        self.myPlate.myName=self.getText(experiment.getElementsByTagName("plateName")[0])
                         
                         
                 self.myAirVolume=AnalyticalSample()
