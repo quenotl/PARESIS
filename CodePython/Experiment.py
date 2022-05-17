@@ -241,8 +241,8 @@ class Experiment:
         # Nx=self.exp_dict['studyDimensions'][0]        
         # Ny=self.exp_dict['studyDimensions'][1]
         u, v = np.meshgrid(np.arange(0, Nx), np.arange(0, Ny))
-        u = (u - (Nx / 2))
-        v = (v - (Ny / 2))
+        u = (u - (Nx // 2))
+        v = (v - (Ny // 2))
         u_m = u *2*pi / (self.exp_dict['studyDimensions'][0]*self.exp_dict['studyPixelSize']*1e-6)
         v_m = v *2*pi / (self.exp_dict['studyDimensions'][1]*self.exp_dict['studyPixelSize']*1e-6)
         uv_sqr=  np.transpose(u_m ** 2 + v_m ** 2)  # ie (u2+v2)
