@@ -15,6 +15,8 @@ from matplotlib import pyplot as plt
 from Samples.generateContrastPhantom import generateContrastPhantom
 from Samples.createSampGeom import CreateSampleSpheresInParallelepiped, CreateSampleSpheresInCylinder, CreateSampleCylindre, CreateSampleSphere, CreateYourSampleGeometry, loadSampleGeometryFromImages
 import time
+import pandas as pd
+import xraylib as xrl
 from numba import jit 
 
 class Sample:
