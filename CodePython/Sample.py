@@ -146,10 +146,10 @@ class Sample:
                             self.delta.append(delta)
 
 
-                a = np.shape(self.delta)[0]
-                if a != len(self.myMaterials):
-                    raise ValueError("One or more materials have not been found in delta beta tables")
-                return
+        a = np.shape(self.delta)[0]
+        if a != len(self.myMaterials):
+            raise ValueError("One or more materials have not been found in delta beta tables")
+        return
             
 #***********************************************************************************************************
 ##ANALYTICAL SAMPLE
